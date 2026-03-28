@@ -34,6 +34,7 @@ export default function PropertyPanel() {
   const node = useProjectStore((s) => s.nodes.find((n) => n.id === selectedNodeId));
   const updateParamValues = useProjectStore((s) => s.updateParamValues);
   const triggerRefresh = useEditorStore((s) => s.triggerRefresh);
+  const compactMode = useEditorStore((s) => s.compactMode);
 
   if (!node || node.type !== 'component' || !node.componentType) {
     return (
@@ -87,6 +88,7 @@ export default function PropertyPanel() {
               value={getValue(param.key, param.defaultValue)}
               onChange={(v) => setValue(param.key, v)}
               theme={theme}
+              size={compactMode ? 'xs' : 'sm'}
             />
           ))}
         </VStack>
@@ -111,6 +113,7 @@ export default function PropertyPanel() {
                         value={getValue(param.key, param.defaultValue)}
                         onChange={(v) => setValue(param.key, v)}
                         theme={theme}
+                        size={compactMode ? 'xs' : 'sm'}
                       />
                     ))}
                   </VStack>
@@ -128,9 +131,10 @@ interface ParamControlProps {
   value: unknown;
   onChange: (value: unknown) => void;
   theme: ResolvedTheme;
+  size?: 'xs' | 'sm';
 }
 
-function ParamControl({ param, value, onChange, theme }: ParamControlProps) {
+function ParamControl({ param, value, onChange, theme, size = 'sm' }: ParamControlProps) {
   // Resolve the theme default for display (extract scalar from Sides/Corners)
   const rawThemeDefault = param.themeVariable
     ? theme.variables[param.themeVariable]
@@ -148,7 +152,7 @@ function ParamControl({ param, value, onChange, theme }: ParamControlProps) {
       </HStack>
       {param.type === 'string' && (
         <Input
-          size="sm"
+          size={size}
           value={(value as string) ?? ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder={param.description}
@@ -156,7 +160,7 @@ function ParamControl({ param, value, onChange, theme }: ParamControlProps) {
       )}
       {param.type === 'number' && (
         <NumberInput.Root
-          size="sm"
+          size={size}
           value={String((value as number) ?? 0)}
           min={param.constraints?.min}
           max={param.constraints?.max}
@@ -196,16 +200,16 @@ function ParamControl({ param, value, onChange, theme }: ParamControlProps) {
         <HStack>
           <Input
             type="color"
-            size="sm"
-            w="40px"
-            h="32px"
+            size={size}
+            w={size === 'xs' ? "24px" : "40px"}
+            h={size === 'xs' ? "24px" : "32px"}
             p={0}
             border="none"
             value={(value as string) || (typeof themeDefault === 'string' ? themeDefault : '#000000')}
             onChange={(e) => onChange(e.target.value)}
           />
           <Input
-            size="sm"
+            size={size}
             flex={1}
             value={(value as string) ?? ''}
             onChange={(e) => onChange(e.target.value)}
@@ -225,7 +229,7 @@ function ParamControl({ param, value, onChange, theme }: ParamControlProps) {
       )}
       {param.type === 'select' && (
         <SimpleSelect
-          size="sm"
+          size={size}
           value={(value as string) ?? ''}
           onValueChange={(nextValue) => onChange(nextValue)}
           options={(param.constraints?.options ?? []).map((opt) => ({
@@ -235,7 +239,7 @@ function ParamControl({ param, value, onChange, theme }: ParamControlProps) {
         />
       )}
       {param.type === 'icon' && (
-        <IconPicker value={(value as string) ?? ''} onChange={onChange} />
+        <IconPicker value={(value as string) ?? ''} onChange={onChange} size={size} />
       )}
     </Box>
   );

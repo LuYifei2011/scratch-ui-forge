@@ -18,6 +18,10 @@ interface EditorState {
   /** Preview canvas background: true = light checkerboard, false = dark */
   previewLight: boolean;
   setPreviewLight: (v: boolean) => void;
+
+  /** Compact mode: true = smaller parameter components */
+  compactMode: boolean;
+  setCompactMode: (v: boolean) => void;
 }
 
 export const useEditorStore = create<EditorState>()(
@@ -35,11 +39,14 @@ export const useEditorStore = create<EditorState>()(
 
       previewLight: true,
       setPreviewLight: (v) => set({ previewLight: v }),
+
+      compactMode: false,
+      setCompactMode: (v) => set({ compactMode: v }),
     }),
     {
       name: 'scratch-ui-forge:editor',
       // Only persist display preferences, not transient selection/refresh state
-      partialize: (s) => ({ previewLight: s.previewLight }),
+      partialize: (s) => ({ previewLight: s.previewLight, compactMode: s.compactMode }),
     }
   )
 );

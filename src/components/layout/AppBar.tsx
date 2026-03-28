@@ -1,9 +1,10 @@
 import { Box, Flex, Heading, Text, Button, HStack, IconButton } from '@chakra-ui/react';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useColorMode } from '../ui/color-mode';
-import { FiSave, FiSun, FiMoon, FiSettings, FiChevronDown } from 'react-icons/fi';
+import { FiSave, FiSun, FiMoon, FiSettings, FiChevronDown, FiMinimize2, FiMaximize2 } from 'react-icons/fi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProjectStore } from '@/store/projectStore';
+import { useEditorStore } from '@/store/editorStore';
 import ProjectSwitcher from '@/components/editor/ProjectSwitcher';
 import ProjectSettingsDialog from '@/components/editor/ProjectSettingsDialog';
 import ExportMenu from './ExportMenu';
@@ -15,6 +16,8 @@ export default function AppBar() {
   const { colorMode, toggleColorMode } = useColorMode();
   const activeProjectName = useProjectStore((s) => s.activeProjectName);
   const persistCurrentProject = useProjectStore((s) => s.persistCurrentProject);
+  const compactMode = useEditorStore((s) => s.compactMode);
+  const setCompactMode = useEditorStore((s) => s.setCompactMode);
 
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -105,6 +108,16 @@ export default function AppBar() {
         </HStack>
         <Box flex={1} />
         <HStack gap={1}>
+          <Tooltip content={compactMode ? '退出紧凑模式' : '开启紧凑模式'}>
+            <IconButton
+              aria-label="Toggle compact mode"
+              size="sm"
+              variant="ghost"
+              onClick={() => setCompactMode(!compactMode)}
+            >
+              {compactMode ? <FiMaximize2 /> : <FiMinimize2 />}
+            </IconButton>
+          </Tooltip>
           <Tooltip content={colorMode === 'dark' ? '切换浅色模式' : '切换深色模式'}>
             <IconButton
               aria-label="Toggle color mode"

@@ -4,9 +4,10 @@ import { getIconNames } from '@/core/utils/icons';
 interface IconPickerProps {
   value: string;
   onChange: (value: unknown) => void;
+  size?: 'xs' | 'sm';
 }
 
-export default function IconPicker({ value, onChange }: IconPickerProps) {
+export default function IconPicker({ value, onChange, size = 'sm' }: IconPickerProps) {
   const iconNames = getIconNames();
 
   return (
@@ -14,7 +15,7 @@ export default function IconPicker({ value, onChange }: IconPickerProps) {
       placement: 'bottom-start'
     }}>
       <Popover.Trigger asChild>
-        <Button size="sm" variant="outline" w="100%">
+        <Button size={size} variant="outline" w="100%">
           {value || '选择图标...'}
         </Button>
       </Popover.Trigger>
