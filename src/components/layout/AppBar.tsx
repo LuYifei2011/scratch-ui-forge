@@ -1,22 +1,19 @@
 import { Box, Flex, Heading, Text, Button, HStack, IconButton } from '@chakra-ui/react';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useColorMode } from '../ui/color-mode';
-import { FiDownload, FiSave, FiSun, FiMoon, FiSettings, FiChevronDown } from 'react-icons/fi';
+import { FiSave, FiSun, FiMoon, FiSettings, FiChevronDown } from 'react-icons/fi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProjectStore } from '@/store/projectStore';
-import { saveProjectToFile } from '@/services/persistence';
 import ProjectSwitcher from '@/components/editor/ProjectSwitcher';
 import ProjectSettingsDialog from '@/components/editor/ProjectSettingsDialog';
+import ExportMenu from './ExportMenu';
 import { useState } from 'react';
 
 export default function AppBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { colorMode, toggleColorMode } = useColorMode();
-  const nodes = useProjectStore((s) => s.nodes);
-  const globalThemeId = useProjectStore((s) => s.globalThemeId);
   const activeProjectName = useProjectStore((s) => s.activeProjectName);
-  const activeProjectDescription = useProjectStore((s) => s.activeProjectDescription);
   const persistCurrentProject = useProjectStore((s) => s.persistCurrentProject);
 
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -28,10 +25,6 @@ export default function AppBar() {
 
   const handleSave = async () => {
     await persistCurrentProject();
-  };
-
-  const handleSaveFile = async () => {
-    await saveProjectToFile(nodes, globalThemeId, activeProjectName, activeProjectDescription);
   };
 
   const handleOpenSettings = () => {
@@ -119,15 +112,9 @@ export default function AppBar() {
               variant="ghost"
               onClick={toggleColorMode}>{colorMode === 'dark' ? <FiSun /> : <FiMoon />}</IconButton>
           </Tooltip>
+          <ExportMenu />
           <Tooltip content="保存">
             <IconButton aria-label="Save" size="sm" variant="ghost" onClick={handleSave}><FiSave /></IconButton>
-          </Tooltip>
-          <Tooltip content="保存到文件">
-            <IconButton
-              aria-label="Save to file"
-              size="sm"
-              variant="ghost"
-              onClick={handleSaveFile}><FiDownload /></IconButton>
           </Tooltip>
         </HStack>
       </Flex>

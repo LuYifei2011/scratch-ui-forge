@@ -1,7 +1,6 @@
 import { Box, VStack } from '@chakra-ui/react';
 import VariantSelector from './VariantSelector';
 import PropertyPanel from './PropertyPanel';
-import ExportPanel from './ExportPanel';
 
 export default function EditorPanel() {
   return (
@@ -10,7 +9,6 @@ export default function EditorPanel() {
         <VariantSelector />
         <PropertyPanel />
       </VStack>
-      <ExportPanel />
     </Box>
   );
 }
