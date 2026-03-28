@@ -1,4 +1,4 @@
-import { Box, Flex, Text, Icon } from '@chakra-ui/react';
+import { Box, Flex, Text, Icon, Input } from '@chakra-ui/react';
 import { useColorModeValue } from '../ui/color-mode';
 import { FiFolder, FiChevronRight, FiChevronDown } from 'react-icons/fi';
 import { MdWidgets } from 'react-icons/md';
@@ -38,14 +38,43 @@ export default function FileTree({ parentId, depth }: FileTreeProps) {
 
 function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
   const node = useProjectStore((s) => s.nodes.find((n) => n.id === nodeId));
+  const moveNode = useProjectStore((s) => s.moveNode);
+  const renameNode = useProjectStore((s) => s.renameNode);
   const selectedNodeId = useEditorStore((s) => s.selectedNodeId);
   const selectNode = useEditorStore((s) => s.selectNode);
+  
   const [expanded, setExpanded] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  
+  // Drag and drop state
+  const [dragState, setDragState] = useState<'top' | 'bottom' | 'inside' | null>(null);
+  
+  // Inline edit state
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(node?.name ?? '');
+
+  const startRenaming = () => {
+    if (node) {
+      setRenameValue(node.name);
+      setIsRenaming(true);
+    }
+  };
+
+  const handleRenameSave = () => {
+    const trimmed = renameValue.trim();
+    if (trimmed && node && trimmed !== node.name) {
+      renameNode(nodeId, trimmed);
+    } else if (node) {
+      setRenameValue(node.name); // revert if empty
+    }
+    setIsRenaming(false);
+  };
 
   const isSelected = selectedNodeId === nodeId;
   const selectedBg = useColorModeValue('brand.50', 'whiteAlpha.100');
   const hoverBg = useColorModeValue('gray.100', 'whiteAlpha.50');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputColor = useColorModeValue('black', 'white');
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -60,16 +89,66 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
 
   const isFolder = node.type === 'folder';
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    e.dataTransfer.setData('application/node-id', nodeId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const h = rect.height;
+
+    if (y < h * 0.25) {
+      setDragState('top');
+    } else if (y > h * 0.75) {
+      setDragState('bottom');
+    } else {
+      setDragState(isFolder ? 'inside' : 'bottom');
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setDragState(null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragState(null);
+    
+    const draggedId = e.dataTransfer.getData('application/node-id');
+    if (!draggedId || draggedId === nodeId) return;
+
+    if (dragState === 'inside') {
+      moveNode(draggedId, nodeId);
+      setExpanded(true);
+    } else {
+      moveNode(draggedId, node.parentId, nodeId, dragState);
+    }
+  };
+
   return (
     <Box>
       <Flex
+        draggable
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         align="center"
         px={2}
         py="3px"
         pl={`${depth * 16 + 8}px`}
         cursor="pointer"
+        position="relative"
         borderRadius="md"
-        bg={isSelected ? selectedBg : 'transparent'}
         _hover={{ bg: isSelected ? selectedBg : hoverBg }}
         onClick={() => {
           selectNode(nodeId);
@@ -78,6 +157,12 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
         onContextMenu={handleContextMenu}
         userSelect="none"
         fontSize="sm"
+        borderTop={dragState === 'top' ? '2px solid' : 'none'}
+        borderTopColor="blue.400"
+        borderBottom={dragState === 'bottom' ? '2px solid' : 'none'}
+        borderBottomColor="blue.400"
+        bg={dragState === 'inside' ? 'blue.500' : (isSelected ? selectedBg : 'transparent')}
+        opacity={dragState === 'inside' ? 0.8 : 1}
       >
         {isFolder && (
           <Icon
@@ -93,10 +178,35 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
           boxSize={3.5}
           color={isFolder ? 'yellow.400' : 'brand.400'}
         />
-        <Text fontSize="sm" lineClamp={1} flex={1}>
-          {node.name}
-        </Text>
-        {!isFolder && node.componentType && (
+        {isRenaming ? (
+          <Box flex={1} mr={2} onClick={(e) => e.stopPropagation()}>
+            <Input
+              autoFocus
+              variant="flushed"
+              size="xs"
+              h="22px"
+              px={1}
+              borderRadius="sm"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleRenameSave();
+                if (e.key === 'Escape') {
+                  setIsRenaming(false);
+                  if (node) setRenameValue(node.name);
+                }
+              }}
+              onBlur={handleRenameSave}
+              bg={inputBg}
+              color={inputColor}
+            />
+          </Box>
+        ) : (
+          <Text fontSize="sm" lineClamp={1} flex={1}>
+            {node.name}
+          </Text>
+        )}
+        {!isFolder && !isRenaming && node.componentType && (
           <Text fontSize="2xs" color="gray.500" ml={1}>
             {node.componentType}
           </Text>
@@ -109,6 +219,7 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
+          onRename={startRenaming}
         />
       )}
     </Box>

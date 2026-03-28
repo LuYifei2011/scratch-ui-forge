@@ -26,6 +26,18 @@ export default function Sidebar() {
     addFolder('新建文件夹', parentId);
   };
 
+  const handleRootDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleRootDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData('application/node-id');
+    if (!draggedId) return;
+    useProjectStore.getState().moveNode(draggedId, null);
+  };
+
   return (
     <Box h="100%" bg="bg.muted" display="flex" flexDirection="column">
       <HStack px={3} py={2} justify="space-between" borderBottom="1px solid" borderColor="whiteAlpha.100">
@@ -49,7 +61,14 @@ export default function Sidebar() {
           </Tooltip>
         </HStack>
       </HStack>
-      <Box flex={1} overflow="auto" px={1} py={1}>
+      <Box 
+        flex={1} 
+        overflow="auto" 
+        px={1} 
+        py={1}
+        onDragOver={handleRootDragOver}
+        onDrop={handleRootDrop}
+      >
         <FileTree parentId={null} depth={0} />
       </Box>
       <NewComponentModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />

@@ -1,24 +1,23 @@
 import { Box, VStack, Text, Portal } from '@chakra-ui/react';
 import { useColorModeValue } from '../ui/color-mode';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useProjectStore } from '@/store/projectStore';
 import { useEditorStore } from '@/store/editorStore';
-import RenameInput from './RenameInput';
 
 interface TreeContextMenuProps {
   nodeId: string;
   x: number;
   y: number;
   onClose: () => void;
+  onRename: () => void;
 }
 
-export default function TreeContextMenu({ nodeId, x, y, onClose }: TreeContextMenuProps) {
+export default function TreeContextMenu({ nodeId, x, y, onClose, onRename }: TreeContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
   const removeNode = useProjectStore((s) => s.removeNode);
   const duplicateNode = useProjectStore((s) => s.duplicateNode);
   const selectNode = useEditorStore((s) => s.selectNode);
   const node = useProjectStore((s) => s.nodes.find((n) => n.id === nodeId));
-  const [showRename, setShowRename] = useState(false);
 
   const bg = useColorModeValue('white', 'gray.700');
   const hoverBg = useColorModeValue('gray.100', 'gray.600');
@@ -35,12 +34,8 @@ export default function TreeContextMenu({ nodeId, x, y, onClose }: TreeContextMe
 
   if (!node) return null;
 
-  if (showRename) {
-    return <RenameInput nodeId={nodeId} onDone={() => { setShowRename(false); onClose(); }} />;
-  }
-
   const items = [
-    { label: '重命名', action: () => setShowRename(true) },
+    { label: '重命名', action: () => { onRename(); onClose(); } },
     ...(node.type === 'component'
       ? [{ label: '复制', action: () => { const newId = duplicateNode(nodeId); if (newId) selectNode(newId); onClose(); } }]
       : []),
