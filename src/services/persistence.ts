@@ -96,11 +96,11 @@ export async function deleteProject(id: string): Promise<void> {
 
 // ─── Import / Export ──────────────────────────────────────────────────
 
-export function exportProjectJSON(nodes: ProjectNode[], globalThemeId?: string, name?: string, description?: string): string {
+function exportProjectJSON(nodes: ProjectNode[], globalThemeId?: string, name?: string, description?: string): string {
   return JSON.stringify({ version: 2, name, description, nodes, globalThemeId }, null, 2);
 }
 
-export function importProjectJSON(json: string): { nodes: ProjectNode[]; globalThemeId?: string; name?: string; description?: string } {
+function importProjectJSON(json: string): { nodes: ProjectNode[]; globalThemeId?: string; name?: string; description?: string } {
   const data = JSON.parse(json);
   if (!data?.nodes || !Array.isArray(data.nodes)) {
     throw new Error('Invalid project file');
