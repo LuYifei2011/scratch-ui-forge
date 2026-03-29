@@ -1,13 +1,13 @@
-import { Box, Text, Flex, IconButton, HStack } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { FiSun, FiMoon, FiZoomIn, FiZoomOut, FiLayout } from 'react-icons/fi';
-import { renderComponent, renderSvgToCanvas } from '@/core/SvgRenderer';
-import { ComponentRegistry } from '@/core/ComponentRegistry';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
-import FrameStrip from './FrameStrip';
-import stageUrl from '@/assets/stage.svg?url';
+import { Box, Text, Flex, IconButton, HStack } from "@chakra-ui/react";
+import { Tooltip } from "@/components/ui/tooltip";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { FiSun, FiMoon, FiZoomIn, FiZoomOut, FiLayout } from "react-icons/fi";
+import { renderComponent, renderSvgToCanvas } from "@/core/SvgRenderer";
+import { ComponentRegistry } from "@/core/ComponentRegistry";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
+import FrameStrip from "./FrameStrip";
+import stageUrl from "@/assets/stage.svg?url";
 
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 8;
@@ -44,8 +44,8 @@ export default function PreviewCanvas() {
   const dragRef = useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null);
 
   const checkerBg = previewLight
-    ? 'repeating-conic-gradient(#e2e8f0 0% 25%, #ffffff 0% 50%) 50% / 20px 20px'
-    : 'repeating-conic-gradient(#2D3748 0% 25%, #1A202C 0% 50%) 50% / 20px 20px';
+    ? "repeating-conic-gradient(#e2e8f0 0% 25%, #ffffff 0% 50%) 50% / 20px 20px"
+    : "repeating-conic-gradient(#2D3748 0% 25%, #1A202C 0% 50%) 50% / 20px 20px";
 
   // Scroll-wheel zoom.
   // Deps include selectedNodeId so the effect re-runs when the outer div first
@@ -59,16 +59,19 @@ export default function PreviewCanvas() {
       const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
       setZoom((z) => clampZoom(z * factor));
     };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
   }, [selectedNodeId]);
 
   // Drag-to-pan
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return;
-    dragRef.current = { startX: e.clientX, startY: e.clientY, ox: offset.x, oy: offset.y };
-    setIsDragging(true);
-  }, [offset]);
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.button !== 0) return;
+      dragRef.current = { startX: e.clientX, startY: e.clientY, ox: offset.x, oy: offset.y };
+      setIsDragging(true);
+    },
+    [offset]
+  );
 
   useEffect(() => {
     if (!isDragging) return;
@@ -79,19 +82,22 @@ export default function PreviewCanvas() {
       setPan({ nodeId: selectedNodeId ?? undefined, x: dragRef.current.ox + dx, y: dragRef.current.oy + dy });
     };
     const onUp = () => setIsDragging(false);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
     return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
     };
   }, [isDragging, selectedNodeId]);
 
   // Render SVG to canvas
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !node || node.type !== 'component' || !node.componentType) {
-      if (canvas) { canvas.width = 0; canvas.height = 0; }
+    if (!canvas || !node || node.type !== "component" || !node.componentType) {
+      if (canvas) {
+        canvas.width = 0;
+        canvas.height = 0;
+      }
       return;
     }
 
@@ -99,29 +105,22 @@ export default function PreviewCanvas() {
     if (!def) return;
 
     const variants = node.selectedVariants ?? def.variants.map((v) => v.name);
-    const variant = activeVariant && variants.includes(activeVariant)
-      ? activeVariant
-      : variants[0] ?? def.variants[0]?.name;
+    const variant =
+      activeVariant && variants.includes(activeVariant) ? activeVariant : (variants[0] ?? def.variants[0]?.name);
 
     const partId = def.parts && activePart ? activePart : undefined;
 
     try {
-      const svgString = renderComponent(
-        node.componentType,
-        node.paramValues ?? {},
-        globalThemeId,
-        variant,
-        partId
-      );
+      const svgString = renderComponent(node.componentType, node.paramValues ?? {}, globalThemeId, variant, partId);
       renderSvgToCanvas(svgString, canvas, 0, 0, zoom).catch((err) => {
-        console.error('Canvas render error:', err);
+        console.error("Canvas render error:", err);
       });
     } catch (err) {
-      console.error('Render error:', err);
+      console.error("Render error:", err);
     }
   }, [node, refreshCounter, activeVariant, activePart, globalThemeId, zoom]);
 
-  if (!node || node.type !== 'component') {
+  if (!node || node.type !== "component") {
     return (
       <Flex h="100%" align="center" justify="center" bg="bg.subtle">
         <Text fontSize="sm" color="gray.500">
@@ -148,31 +147,33 @@ export default function PreviewCanvas() {
         background={checkerBg}
         overflow="hidden"
         position="relative"
-        cursor={isDragging ? 'grabbing' : 'grab'}
+        cursor={isDragging ? "grabbing" : "grab"}
         onMouseDown={onMouseDown}
         userSelect="none"
       >
         {/* Toolbar */}
         <HStack gap={1} position="absolute" top={1} right={1} zIndex={1}>
-          <Tooltip content={previewLight ? '切换深色背景' : '切换浅色背景'}>
+          <Tooltip content={previewLight ? "切换深色背景" : "切换浅色背景"}>
             <IconButton
               aria-label="Toggle preview bg"
               size="xs"
-              bg={previewLight ? 'blackAlpha.800' : 'whiteAlpha.800'}
-              color={previewLight ? 'white' : 'black'}
+              bg={previewLight ? "blackAlpha.800" : "whiteAlpha.800"}
+              color={previewLight ? "white" : "black"}
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => setPreviewLight(!previewLight)}>
+              onClick={() => setPreviewLight(!previewLight)}
+            >
               {previewLight ? <FiMoon /> : <FiSun />}
             </IconButton>
           </Tooltip>
-          <Tooltip content={showStage ? '隐藏舞台背景' : '叠加舞台背景'}>
+          <Tooltip content={showStage ? "隐藏舞台背景" : "叠加舞台背景"}>
             <IconButton
               aria-label="Toggle stage overlay"
               size="xs"
-              bg={showStage ? 'brand.500' : 'blackAlpha.600'}
+              bg={showStage ? "brand.500" : "blackAlpha.600"}
               color="white"
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => setShowStage((v) => !v)}>
+              onClick={() => setShowStage((v) => !v)}
+            >
               <FiLayout />
             </IconButton>
           </Tooltip>
@@ -183,7 +184,8 @@ export default function PreviewCanvas() {
               bg="blackAlpha.600"
               color="white"
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => setZoom((z) => clampZoom(z / 1.1))}>
+              onClick={() => setZoom((z) => clampZoom(z / 1.1))}
+            >
               <FiZoomOut />
             </IconButton>
           </Tooltip>
@@ -199,7 +201,10 @@ export default function PreviewCanvas() {
               borderRadius="sm"
               cursor="pointer"
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => { setZoom(1); setPan({ nodeId: selectedNodeId ?? undefined, x: 0, y: 0 }); }}
+              onClick={() => {
+                setZoom(1);
+                setPan({ nodeId: selectedNodeId ?? undefined, x: 0, y: 0 });
+              }}
             >
               {Math.round(zoom * 100)}%
             </Box>
@@ -211,7 +216,8 @@ export default function PreviewCanvas() {
               bg="blackAlpha.600"
               color="white"
               onMouseDown={(e) => e.stopPropagation()}
-              onClick={() => setZoom((z) => clampZoom(z * 1.1))}>
+              onClick={() => setZoom((z) => clampZoom(z * 1.1))}
+            >
               <FiZoomIn />
             </IconButton>
           </Tooltip>
@@ -223,16 +229,16 @@ export default function PreviewCanvas() {
           <img
             src={stageUrl}
             style={{
-              position: 'absolute',
-              left: '50%',
-              top: '50%',
+              position: "absolute",
+              left: "50%",
+              top: "50%",
               width: `${STAGE_W}px`,
               height: `${STAGE_H}px`,
-              maxWidth: 'none',
-              transformOrigin: 'center center',
+              maxWidth: "none",
+              transformOrigin: "center center",
               transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) translate(0, -22px) scale(${zoom})`,
-              pointerEvents: 'none',
-              userSelect: 'none',
+              pointerEvents: "none",
+              userSelect: "none",
               zIndex: 0,
             }}
             alt="stage"
@@ -241,11 +247,11 @@ export default function PreviewCanvas() {
         <canvas
           ref={canvasRef}
           style={{
-            display: 'block',
-            position: 'relative',
+            display: "block",
+            position: "relative",
             zIndex: 1,
             transform: `translate(${offset.x}px, ${offset.y}px)`,
-            willChange: 'transform',
+            willChange: "transform",
           }}
         />
       </Flex>

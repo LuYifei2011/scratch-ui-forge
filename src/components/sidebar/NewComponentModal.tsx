@@ -1,9 +1,9 @@
-import { Button, Input, VStack, Field, Dialog, Portal } from '@chakra-ui/react';
-import { useState } from 'react';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
-import SimpleSelect from '@/components/ui/simple-select';
-import { ComponentRegistry } from '@/core/ComponentRegistry';
+import { Button, Input, VStack, Field, Dialog, Portal } from "@chakra-ui/react";
+import { useState } from "react";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
+import SimpleSelect from "@/components/ui/simple-select";
+import { ComponentRegistry } from "@/core/ComponentRegistry";
 
 interface NewComponentModalProps {
   isOpen: boolean;
@@ -12,8 +12,8 @@ interface NewComponentModalProps {
 
 export default function NewComponentModal({ isOpen, onClose }: NewComponentModalProps) {
   const components = ComponentRegistry.list();
-  const [name, setName] = useState('');
-  const [componentType, setComponentType] = useState(components[0]?.id ?? '');
+  const [name, setName] = useState("");
+  const [componentType, setComponentType] = useState(components[0]?.id ?? "");
   const addComponent = useProjectStore((s) => s.addComponent);
   const selectedNodeId = useEditorStore((s) => s.selectedNodeId);
   const nodes = useProjectStore((s) => s.nodes);
@@ -23,7 +23,7 @@ export default function NewComponentModal({ isOpen, onClose }: NewComponentModal
     if (!selectedNodeId) return null;
     const node = nodes.find((n) => n.id === selectedNodeId);
     if (!node) return null;
-    return node.type === 'folder' ? node.id : node.parentId;
+    return node.type === "folder" ? node.id : node.parentId;
   };
 
   const handleCreate = () => {
@@ -31,18 +31,22 @@ export default function NewComponentModal({ isOpen, onClose }: NewComponentModal
     const finalName = name.trim() || def?.name || componentType;
     const newId = addComponent(finalName, getParent(), componentType);
     selectNode(newId);
-    setName('');
+    setName("");
     onClose();
   };
 
   return (
-    <Dialog.Root open={isOpen} placement='center' size='sm' onOpenChange={e => {
-      if (!e.open) {
-        onClose();
-      }
-    }}>
+    <Dialog.Root
+      open={isOpen}
+      placement="center"
+      size="sm"
+      onOpenChange={(e) => {
+        if (!e.open) {
+          onClose();
+        }
+      }}
+    >
       <Portal>
-
         <Dialog.Backdrop />
         <Dialog.Positioner>
           <Dialog.Content>
@@ -69,7 +73,7 @@ export default function NewComponentModal({ isOpen, onClose }: NewComponentModal
                     onChange={(e) => setName(e.target.value)}
                     placeholder="留空使用默认名称"
                     size="sm"
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+                    onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   />
                 </Field.Root>
               </VStack>
@@ -84,7 +88,6 @@ export default function NewComponentModal({ isOpen, onClose }: NewComponentModal
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>
-
       </Portal>
     </Dialog.Root>
   );

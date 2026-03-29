@@ -1,6 +1,6 @@
-import { registerAllComponents } from '@/definitions/components';
-import { registerAllThemes } from '@/definitions/themes';
-import { registerBuiltinIcons } from '@/definitions/icons/builtin';
+import { registerAllComponents } from "@/definitions/components";
+import { registerAllThemes } from "@/definitions/themes";
+import { registerBuiltinIcons } from "@/definitions/icons/builtin";
 
 let initialized = false;
 

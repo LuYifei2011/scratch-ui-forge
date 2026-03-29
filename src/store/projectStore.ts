@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import { nanoid } from 'nanoid';
-import type { ProjectNode } from '@/core/types';
-import { ComponentRegistry } from '@/core/ComponentRegistry';
-import * as persistence from '@/services/persistence';
-import type { ProjectMeta } from '@/services/persistence';
+import { create } from "zustand";
+import { nanoid } from "nanoid";
+import type { ProjectNode } from "@/core/types";
+import { ComponentRegistry } from "@/core/ComponentRegistry";
+import * as persistence from "@/services/persistence";
+import type { ProjectMeta } from "@/services/persistence";
 
-const DEFAULT_THEME_ID = 'fluent-light';
+const DEFAULT_THEME_ID = "fluent-light";
 
 interface ProjectState {
   // ─── Multi-project management ──────────────────────────────────────
@@ -35,7 +35,7 @@ interface ProjectState {
   removeNode: (id: string) => void;
   renameNode: (id: string, name: string) => void;
   duplicateNode: (id: string) => string | null;
-  moveNode: (id: string, newParentId: string | null, targetNodeId?: string, placement?: 'top' | 'bottom') => void;
+  moveNode: (id: string, newParentId: string | null, targetNodeId?: string, placement?: "top" | "bottom") => void;
   updateParamValues: (id: string, values: Record<string, unknown>) => void;
   updateSelectedVariants: (id: string, variants: string[]) => void;
   setNodes: (nodes: ProjectNode[]) => void;
@@ -48,15 +48,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   // ─── Multi-project ─────────────────────────────────────────────────
   projects: [],
   activeProjectId: null,
-  activeProjectName: '',
-  activeProjectDescription: '',
+  activeProjectName: "",
+  activeProjectDescription: "",
 
   async loadProjectList() {
     const projects = await persistence.listProjects();
     set({ projects });
   },
 
-  async createProject(name: string, description = '', themeId = DEFAULT_THEME_ID) {
+  async createProject(name: string, description = "", themeId = DEFAULT_THEME_ID) {
     const id = nanoid(8);
     const now = Date.now();
     await persistence.saveProject({
@@ -78,8 +78,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       persistence.setActiveProjectId(null);
       set({
         activeProjectId: null,
-        activeProjectName: '',
-        activeProjectDescription: '',
+        activeProjectName: "",
+        activeProjectDescription: "",
         nodes: [],
         globalThemeId: DEFAULT_THEME_ID,
       });
@@ -102,8 +102,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     persistence.setActiveProjectId(id);
     set({
       activeProjectId: id,
-      activeProjectName: data.name || '未命名项目',
-      activeProjectDescription: data.description || '',
+      activeProjectName: data.name || "未命名项目",
+      activeProjectDescription: data.description || "",
       nodes: data.nodes ?? [],
       globalThemeId: data.globalThemeId || DEFAULT_THEME_ID,
     });
@@ -127,8 +127,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     persistence.setActiveProjectId(null);
     set({
       activeProjectId: null,
-      activeProjectName: '',
-      activeProjectDescription: '',
+      activeProjectName: "",
+      activeProjectDescription: "",
       nodes: [],
       globalThemeId: DEFAULT_THEME_ID,
     });
@@ -157,8 +157,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const now = Date.now();
       await persistence.saveProject({
         id,
-        name: loaded.name || '导入的项目',
-        description: loaded.description || '',
+        name: loaded.name || "导入的项目",
+        description: loaded.description || "",
         nodes: loaded.nodes,
         globalThemeId: loaded.globalThemeId || DEFAULT_THEME_ID,
         createdAt: now,
@@ -182,7 +182,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     const node: ProjectNode = {
       id,
       name,
-      type: 'folder',
+      type: "folder",
       parentId,
       order: siblings.length,
     };
@@ -194,13 +194,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     const id = nanoid(8);
     const siblings = get().getChildren(parentId);
     const def = ComponentRegistry.get(componentType);
-    const selectedVariants = def
-      ? def.variants.filter((v) => v.name !== 'disabled').map((v) => v.name)
-      : undefined;
+    const selectedVariants = def ? def.variants.filter((v) => v.name !== "disabled").map((v) => v.name) : undefined;
     const node: ProjectNode = {
       id,
       name,
-      type: 'component',
+      type: "component",
       parentId,
       order: siblings.length,
       componentType,
@@ -231,7 +229,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   duplicateNode(id) {
     const src = get().nodes.find((n) => n.id === id);
-    if (!src || src.type === 'folder') return null;
+    if (!src || src.type === "folder") return null;
     const newId = nanoid(8);
     const siblings = get().getChildren(src.parentId);
     const copy: ProjectNode = {
@@ -247,7 +245,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   moveNode(id, newParentId, targetNodeId, placement) {
     const state = get();
-    const nodeToMove = state.nodes.find(n => n.id === id);
+    const nodeToMove = state.nodes.find((n) => n.id === id);
     if (!nodeToMove) return;
 
     // Check circular dependency if moving to a folder
@@ -255,22 +253,24 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       let currId: string | null = newParentId;
       while (currId) {
         if (currId === id) return; // Prevent dropping into its own descendant
-        const parent = state.nodes.find(n => n.id === currId);
+        const parent = state.nodes.find((n) => n.id === currId);
         currId = parent?.parentId ?? null;
       }
     }
 
-    const otherSiblings = state.nodes.filter(n => n.parentId === newParentId && n.id !== id).sort((a, b) => a.order - b.order);
-    
+    const otherSiblings = state.nodes
+      .filter((n) => n.parentId === newParentId && n.id !== id)
+      .sort((a, b) => a.order - b.order);
+
     let newSiblings = [];
     if (targetNodeId && placement) {
-      const targetLocalIndex = otherSiblings.findIndex(n => n.id === targetNodeId);
+      const targetLocalIndex = otherSiblings.findIndex((n) => n.id === targetNodeId);
       if (targetLocalIndex !== -1) {
-        const insertIndex = placement === 'top' ? targetLocalIndex : targetLocalIndex + 1;
+        const insertIndex = placement === "top" ? targetLocalIndex : targetLocalIndex + 1;
         newSiblings = [
           ...otherSiblings.slice(0, insertIndex),
           { ...nodeToMove, parentId: newParentId },
-          ...otherSiblings.slice(insertIndex)
+          ...otherSiblings.slice(insertIndex),
         ];
       } else {
         newSiblings = [...otherSiblings, { ...nodeToMove, parentId: newParentId }];
@@ -293,9 +293,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   updateParamValues(id, values) {
     set((s) => ({
-      nodes: s.nodes.map((n) =>
-        n.id === id ? { ...n, paramValues: { ...n.paramValues, ...values } } : n
-      ),
+      nodes: s.nodes.map((n) => (n.id === id ? { ...n, paramValues: { ...n.paramValues, ...values } } : n)),
     }));
   },
 

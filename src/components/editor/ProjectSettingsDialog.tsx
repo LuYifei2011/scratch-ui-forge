@@ -1,30 +1,20 @@
-import {
-  VStack,
-  Input,
-  Textarea,
-  Button,
-  Dialog,
-  Portal,
-  Field,
-  Text,
-  Separator,
-} from '@chakra-ui/react';
-import { useState } from 'react';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
-import { ThemeEngine } from '@/core/ThemeEngine';
-import SimpleSelect from '@/components/ui/simple-select';
+import { VStack, Input, Textarea, Button, Dialog, Portal, Field, Text, Separator } from "@chakra-ui/react";
+import { useState } from "react";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
+import { ThemeEngine } from "@/core/ThemeEngine";
+import SimpleSelect from "@/components/ui/simple-select";
 
-const DEFAULT_THEME_ID = 'fluent-light';
+const DEFAULT_THEME_ID = "fluent-light";
 
 interface ProjectSettingsDialogProps {
   open: boolean;
   onClose: () => void;
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
 }
 
 interface ProjectSettingsFormProps {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   initialName: string;
   initialDescription: string;
   initialThemeId: string;
@@ -49,7 +39,7 @@ function ProjectSettingsForm({
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleSave = async () => {
-    await onSave(name.trim() || '未命名项目', description.trim(), themeId);
+    await onSave(name.trim() || "未命名项目", description.trim(), themeId);
   };
 
   const handleDelete = async () => {
@@ -73,7 +63,7 @@ function ProjectSettingsForm({
               placeholder="我的项目"
               size="sm"
               autoFocus
-              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+              onKeyDown={(e) => e.key === "Enter" && handleSave()}
             />
           </Field.Root>
           <Field.Root>
@@ -97,17 +87,17 @@ function ProjectSettingsForm({
             />
           </Field.Root>
 
-          {mode === 'edit' && onDelete && (
+          {mode === "edit" && onDelete && (
             <>
               <Separator />
               <Button
                 size="sm"
-                variant={confirmDelete ? 'solid' : 'outline'}
+                variant={confirmDelete ? "solid" : "outline"}
                 colorPalette="red"
                 w="100%"
                 onClick={handleDelete}
               >
-                {confirmDelete ? '确认删除此项目' : '删除项目'}
+                {confirmDelete ? "确认删除此项目" : "删除项目"}
               </Button>
               {confirmDelete && (
                 <Text fontSize="xs" color="fg.muted">
@@ -123,7 +113,7 @@ function ProjectSettingsForm({
           取消
         </Button>
         <Button size="sm" colorPalette="brand" onClick={handleSave}>
-          {mode === 'create' ? '创建' : '保存'}
+          {mode === "create" ? "创建" : "保存"}
         </Button>
       </Dialog.Footer>
     </>
@@ -142,19 +132,20 @@ export default function ProjectSettingsDialog({ open, onClose, mode }: ProjectSe
   const activeProjectId = useProjectStore((s) => s.activeProjectId);
   const triggerRefresh = useEditorStore((s) => s.triggerRefresh);
 
-  const formKey = mode === 'edit'
-    ? `edit:${activeProjectId}:${activeProjectName}:${activeProjectDescription}:${globalThemeId}`
-    : 'create';
+  const formKey =
+    mode === "edit"
+      ? `edit:${activeProjectId}:${activeProjectName}:${activeProjectDescription}:${globalThemeId}`
+      : "create";
 
   const handleSave = async (name: string, description: string, themeId: string) => {
-    if (mode === 'create') {
-      const id = await createProject(name || '新项目', description, themeId);
+    if (mode === "create") {
+      const id = await createProject(name || "新项目", description, themeId);
       onClose();
       await openProject(id);
       return;
     }
 
-    updateActiveProjectMeta(name || '未命名项目', description);
+    updateActiveProjectMeta(name || "未命名项目", description);
     if (themeId !== globalThemeId) {
       setGlobalThemeId(themeId);
       triggerRefresh();
@@ -173,24 +164,26 @@ export default function ProjectSettingsDialog({ open, onClose, mode }: ProjectSe
       open={open}
       placement="center"
       size="sm"
-      onOpenChange={(e) => { if (!e.open) onClose(); }}
+      onOpenChange={(e) => {
+        if (!e.open) onClose();
+      }}
     >
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
           <Dialog.Content>
-            <Dialog.Header>{mode === 'create' ? '新建项目' : '项目设置'}</Dialog.Header>
+            <Dialog.Header>{mode === "create" ? "新建项目" : "项目设置"}</Dialog.Header>
             <Dialog.CloseTrigger />
             {open && (
               <ProjectSettingsForm
                 key={formKey}
                 mode={mode}
-                initialName={mode === 'edit' ? activeProjectName : ''}
-                initialDescription={mode === 'edit' ? activeProjectDescription : ''}
-                initialThemeId={mode === 'edit' ? globalThemeId : DEFAULT_THEME_ID}
+                initialName={mode === "edit" ? activeProjectName : ""}
+                initialDescription={mode === "edit" ? activeProjectDescription : ""}
+                initialThemeId={mode === "edit" ? globalThemeId : DEFAULT_THEME_ID}
                 onCancel={onClose}
                 onSave={handleSave}
-                onDelete={mode === 'edit' ? handleDelete : undefined}
+                onDelete={mode === "edit" ? handleDelete : undefined}
               />
             )}
           </Dialog.Content>

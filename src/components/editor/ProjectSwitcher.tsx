@@ -1,15 +1,7 @@
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Separator,
-  Popover,
-  Portal,
-} from '@chakra-ui/react';
-import { FiPlus, FiUpload } from 'react-icons/fi';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
+import { Box, VStack, HStack, Text, Separator, Popover, Portal } from "@chakra-ui/react";
+import { FiPlus, FiUpload } from "react-icons/fi";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
 
 interface ProjectSwitcherProps {
   open: boolean;
@@ -50,18 +42,22 @@ export default function ProjectSwitcher({ open, onClose, onCreateNew, children }
   };
 
   const formatDate = (ts: number) =>
-    new Date(ts).toLocaleString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
+    new Date(ts).toLocaleString("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
   return (
-    <Popover.Root open={open} onOpenChange={(e) => { if (!e.open) onClose(); }} positioning={{ placement: 'bottom-start' }}>
-      <Popover.Trigger asChild>
-        {children}
-      </Popover.Trigger>
+    <Popover.Root
+      open={open}
+      onOpenChange={(e) => {
+        if (!e.open) onClose();
+      }}
+      positioning={{ placement: "bottom-start" }}
+    >
+      <Popover.Trigger asChild>{children}</Popover.Trigger>
       <Portal>
         <Popover.Positioner>
           <Popover.Content w="300px" maxH="400px">
@@ -78,11 +74,11 @@ export default function ProjectSwitcher({ open, onClose, onCreateNew, children }
                     px={3}
                     py={2}
                     cursor="pointer"
-                    bg={p.id === activeProjectId ? 'bg.emphasized' : undefined}
-                    _hover={{ bg: 'bg.emphasized' }}
+                    bg={p.id === activeProjectId ? "bg.emphasized" : undefined}
+                    _hover={{ bg: "bg.emphasized" }}
                     onClick={() => handleSwitch(p.id)}
                   >
-                    <Text fontSize="sm" fontWeight={p.id === activeProjectId ? 'bold' : 'normal'}>
+                    <Text fontSize="sm" fontWeight={p.id === activeProjectId ? "bold" : "normal"}>
                       {p.name}
                     </Text>
                     {p.description && (
@@ -105,7 +101,7 @@ export default function ProjectSwitcher({ open, onClose, onCreateNew, children }
                   gap={2}
                   cursor="pointer"
                   borderRadius="md"
-                  _hover={{ bg: 'bg.emphasized' }}
+                  _hover={{ bg: "bg.emphasized" }}
                   onClick={handleCreate}
                 >
                   <FiPlus />
@@ -118,7 +114,7 @@ export default function ProjectSwitcher({ open, onClose, onCreateNew, children }
                   gap={2}
                   cursor="pointer"
                   borderRadius="md"
-                  _hover={{ bg: 'bg.emphasized' }}
+                  _hover={{ bg: "bg.emphasized" }}
                   onClick={handleImport}
                 >
                   <FiUpload />

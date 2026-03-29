@@ -1,6 +1,6 @@
-import { Box, VStack } from '@chakra-ui/react';
-import VariantSelector from './VariantSelector';
-import PropertyPanel from './PropertyPanel';
+import { Box, VStack } from "@chakra-ui/react";
+import VariantSelector from "./VariantSelector";
+import PropertyPanel from "./PropertyPanel";
 
 export default function EditorPanel() {
   return (

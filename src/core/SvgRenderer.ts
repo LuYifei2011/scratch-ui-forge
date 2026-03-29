@@ -1,11 +1,11 @@
-import { SVG, type Container } from '@svgdotjs/svg.js';
-import { ComponentRegistry } from './ComponentRegistry';
-import { ThemeEngine } from './ThemeEngine';
-import type { RenderContext, RenderUtils, ScratchComponentDef } from './types';
-import * as textUtils from './utils/text';
-import * as shapeUtils from './utils/shapes';
-import * as iconUtils from './utils/icons';
-import * as colorUtils from './utils/colors';
+import { SVG, type Container } from "@svgdotjs/svg.js";
+import { ComponentRegistry } from "./ComponentRegistry";
+import { ThemeEngine } from "./ThemeEngine";
+import type { RenderContext, RenderUtils, ScratchComponentDef } from "./types";
+import * as textUtils from "./utils/text";
+import * as shapeUtils from "./utils/shapes";
+import * as iconUtils from "./utils/icons";
+import * as colorUtils from "./utils/colors";
 
 const utils: RenderUtils = {
   text: textUtils,
@@ -61,8 +61,8 @@ function fitCanvasToGroup(canvas: Container, group: Container): void {
   if (box.width > 0 && box.height > 0) {
     const vx = Math.min(0, box.x) - STROKE_OVERFLOW_PAD;
     const vy = Math.min(0, box.y) - STROKE_OVERFLOW_PAD;
-    const vw = (box.x + box.width) - vx + STROKE_OVERFLOW_PAD;
-    const vh = (box.y + box.height) - vy + STROKE_OVERFLOW_PAD;
+    const vw = box.x + box.width - vx + STROKE_OVERFLOW_PAD;
+    const vh = box.y + box.height - vy + STROKE_OVERFLOW_PAD;
     canvas.size(Math.ceil(vw), Math.ceil(vh)).viewbox(vx, vy, vw, vh);
   }
 }
@@ -123,9 +123,7 @@ export function renderAllVariants(
   const def = ComponentRegistry.get(componentId);
   if (!def) throw new Error(`Component "${componentId}" not registered`);
 
-  const variants = selectedVariants
-    ? def.variants.filter((v) => selectedVariants.includes(v.name))
-    : def.variants;
+  const variants = selectedVariants ? def.variants.filter((v) => selectedVariants.includes(v.name)) : def.variants;
 
   return variants.map((v) => ({
     variantName: v.name,
@@ -147,9 +145,7 @@ export function renderAllFrames(
   const def = ComponentRegistry.get(componentId);
   if (!def) throw new Error(`Component "${componentId}" not registered`);
 
-  const variants = selectedVariants
-    ? def.variants.filter((v) => selectedVariants.includes(v.name))
-    : def.variants;
+  const variants = selectedVariants ? def.variants.filter((v) => selectedVariants.includes(v.name)) : def.variants;
 
   const results: { variantName: string; variantLabel: string; partId?: string; partName?: string; svg: string }[] = [];
 
@@ -198,7 +194,7 @@ export function renderToContainer(
   const def = ComponentRegistry.get(componentId);
   if (!def) return;
 
-  container.innerHTML = '';
+  container.innerHTML = "";
 
   const mergedParams = mergeParams(def, params, variantName);
   const theme = ThemeEngine.resolve(themeId, componentId);
@@ -243,11 +239,11 @@ export function renderSvgToCanvas(
   maxW: number,
   maxH: number,
   /** When provided, render at naturalSize × zoom (ignores maxW/maxH). */
-  zoom?: number,
+  zoom?: number
 ): Promise<void> {
   const dpr = window.devicePixelRatio || 1;
   return new Promise<void>((resolve, reject) => {
-    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => {
@@ -260,7 +256,7 @@ export function renderSvgToCanvas(
       canvas.height = displayH * dpr;
       canvas.style.width = `${displayW}px`;
       canvas.style.height = `${displayH}px`;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.scale(dpr, dpr);
         ctx.drawImage(img, 0, 0, displayW, displayH);
@@ -270,7 +266,7 @@ export function renderSvgToCanvas(
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error('Failed to render SVG to canvas'));
+      reject(new Error("Failed to render SVG to canvas"));
     };
     img.src = url;
   });

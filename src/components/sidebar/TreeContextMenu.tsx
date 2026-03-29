@@ -1,8 +1,8 @@
-import { Box, VStack, Text, Portal } from '@chakra-ui/react';
-import { useColorModeValue } from '../ui/color-mode';
-import { useRef, useEffect } from 'react';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
+import { Box, VStack, Text, Portal } from "@chakra-ui/react";
+import { useColorModeValue } from "../ui/color-mode";
+import { useRef, useEffect } from "react";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
 
 interface TreeContextMenuProps {
   nodeId: string;
@@ -19,8 +19,8 @@ export default function TreeContextMenu({ nodeId, x, y, onClose, onRename }: Tre
   const selectNode = useEditorStore((s) => s.selectNode);
   const node = useProjectStore((s) => s.nodes.find((n) => n.id === nodeId));
 
-  const bg = useColorModeValue('white', 'gray.700');
-  const hoverBg = useColorModeValue('gray.100', 'gray.600');
+  const bg = useColorModeValue("white", "gray.700");
+  const hoverBg = useColorModeValue("gray.100", "gray.600");
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -28,18 +28,41 @@ export default function TreeContextMenu({ nodeId, x, y, onClose, onRename }: Tre
         onClose();
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [onClose]);
 
   if (!node) return null;
 
   const items = [
-    { label: '重命名', action: () => { onRename(); onClose(); } },
-    ...(node.type === 'component'
-      ? [{ label: '复制', action: () => { const newId = duplicateNode(nodeId); if (newId) selectNode(newId); onClose(); } }]
+    {
+      label: "重命名",
+      action: () => {
+        onRename();
+        onClose();
+      },
+    },
+    ...(node.type === "component"
+      ? [
+          {
+            label: "复制",
+            action: () => {
+              const newId = duplicateNode(nodeId);
+              if (newId) selectNode(newId);
+              onClose();
+            },
+          },
+        ]
       : []),
-    { label: '删除', action: () => { removeNode(nodeId); selectNode(null); onClose(); }, color: 'red.400' },
+    {
+      label: "删除",
+      action: () => {
+        removeNode(nodeId);
+        selectNode(null);
+        onClose();
+      },
+      color: "red.400",
+    },
   ];
 
   return (

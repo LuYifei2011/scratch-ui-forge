@@ -1,11 +1,11 @@
-import type { ScratchComponentDef, RenderContext, ResolvedTheme } from '@/core/types';
-import { sidesOf, cornersOf } from '@/core/types';
-import { measureText } from '@/core/utils/text';
+import type { ScratchComponentDef, RenderContext, ResolvedTheme } from "@/core/types";
+import { sidesOf, cornersOf } from "@/core/types";
+import { measureText } from "@/core/utils/text";
 
 function computeButtonSize(params: Record<string, unknown>, theme: ResolvedTheme) {
-  const label = (params.label as string) || '';
+  const label = (params.label as string) || "";
   const fontSize = (params.fontSize as number) || theme.variables.fontSize;
-  const fontWeight = (params.fontWeight as string) || 'bold';
+  const fontWeight = (params.fontWeight as string) || "bold";
   const fontFamily = theme.variables.fontFamily;
   const iconName = params.icon as string;
   const hasIcon = !!iconName;
@@ -27,160 +27,160 @@ function computeButtonSize(params: Record<string, unknown>, theme: ResolvedTheme
 }
 
 const buttonDef: ScratchComponentDef = {
-  id: 'button',
-  name: '按钮',
-  category: '基础',
-  iconSlots: ['icon'],
+  id: "button",
+  name: "按钮",
+  category: "基础",
+  iconSlots: ["icon"],
   params: [
     {
-      key: 'width',
-      label: '宽度',
-      type: 'number',
+      key: "width",
+      label: "宽度",
+      type: "number",
       defaultValue: 0,
-      group: '尺寸',
+      group: "尺寸",
       constraints: { min: 0, max: 600, step: 1 },
-      description: '0 = 自动',
+      description: "0 = 自动",
     },
     {
-      key: 'height',
-      label: '高度',
-      type: 'number',
+      key: "height",
+      label: "高度",
+      type: "number",
       defaultValue: 0,
-      group: '尺寸',
+      group: "尺寸",
       constraints: { min: 0, max: 600, step: 1 },
-      description: '0 = 自动',
+      description: "0 = 自动",
     },
     {
-      key: 'label',
-      label: '标签',
-      type: 'string',
-      defaultValue: '按钮',
-      group: '内容',
+      key: "label",
+      label: "标签",
+      type: "string",
+      defaultValue: "按钮",
+      group: "内容",
       common: true,
     },
     {
-      key: 'style',
-      label: '样式',
-      type: 'select',
-      defaultValue: 'primary',
-      group: '外观',
+      key: "style",
+      label: "样式",
+      type: "select",
+      defaultValue: "primary",
+      group: "外观",
       common: true,
       constraints: {
         options: [
-          { label: '主要', value: 'primary' },
-          { label: '次要', value: 'secondary' },
-          { label: '描边', value: 'outline' },
-          { label: '幽灵', value: 'ghost' },
+          { label: "主要", value: "primary" },
+          { label: "次要", value: "secondary" },
+          { label: "描边", value: "outline" },
+          { label: "幽灵", value: "ghost" },
         ],
       },
     },
     {
-      key: 'icon',
-      label: '图标',
-      type: 'icon',
-      defaultValue: '',
-      group: '内容',
+      key: "icon",
+      label: "图标",
+      type: "icon",
+      defaultValue: "",
+      group: "内容",
       common: true,
     },
     {
-      key: 'iconPosition',
-      label: '图标位置',
-      type: 'select',
-      defaultValue: 'left',
-      group: '内容',
+      key: "iconPosition",
+      label: "图标位置",
+      type: "select",
+      defaultValue: "left",
+      group: "内容",
       constraints: {
         options: [
-          { label: '左侧', value: 'left' },
-          { label: '右侧', value: 'right' },
+          { label: "左侧", value: "left" },
+          { label: "右侧", value: "right" },
         ],
       },
     },
     {
-      key: 'fontSize',
-      label: '字号',
-      type: 'number',
+      key: "fontSize",
+      label: "字号",
+      type: "number",
       defaultValue: 14,
-      group: '文字',
+      group: "文字",
       constraints: { min: 8, max: 48, step: 1 },
     },
     {
-      key: 'fontWeight',
-      label: '字重',
-      type: 'select',
-      defaultValue: 'bold',
-      group: '文字',
+      key: "fontWeight",
+      label: "字重",
+      type: "select",
+      defaultValue: "bold",
+      group: "文字",
       constraints: {
         options: [
-          { label: '常规', value: 'normal' },
-          { label: '粗体', value: 'bold' },
+          { label: "常规", value: "normal" },
+          { label: "粗体", value: "bold" },
         ],
       },
     },
     {
-      key: 'textColor',
-      label: '文字颜色',
-      type: 'color',
-      defaultValue: '',
-      group: '颜色',
-      themeVariable: 'onPrimaryColor',
+      key: "textColor",
+      label: "文字颜色",
+      type: "color",
+      defaultValue: "",
+      group: "颜色",
+      themeVariable: "onPrimaryColor",
     },
     {
-      key: 'bgColor',
-      label: '背景颜色',
-      type: 'color',
-      defaultValue: '',
-      group: '颜色',
-      themeVariable: 'primaryColor',
+      key: "bgColor",
+      label: "背景颜色",
+      type: "color",
+      defaultValue: "",
+      group: "颜色",
+      themeVariable: "primaryColor",
     },
     {
-      key: 'borderRadius',
-      label: '圆角',
-      type: 'number',
+      key: "borderRadius",
+      label: "圆角",
+      type: "number",
       defaultValue: -1,
-      group: '外观',
+      group: "外观",
       constraints: { min: -1, max: 100, step: 1 },
-      description: '-1 = 主题默认',
-      themeVariable: 'borderRadius',
+      description: "-1 = 主题默认",
+      themeVariable: "borderRadius",
     },
     {
-      key: 'borderColor',
-      label: '边框颜色',
-      type: 'color',
-      defaultValue: '',
-      group: '颜色',
-      themeVariable: 'borderColor',
+      key: "borderColor",
+      label: "边框颜色",
+      type: "color",
+      defaultValue: "",
+      group: "颜色",
+      themeVariable: "borderColor",
     },
     {
-      key: 'borderWidth',
-      label: '边框宽度',
-      type: 'number',
+      key: "borderWidth",
+      label: "边框宽度",
+      type: "number",
       defaultValue: -1,
-      group: '外观',
+      group: "外观",
       constraints: { min: -1, max: 10, step: 0.5 },
-      description: '-1 = 主题默认',
-      themeVariable: 'borderWidth',
+      description: "-1 = 主题默认",
+      themeVariable: "borderWidth",
     },
     {
-      key: 'opacity',
-      label: '不透明度',
-      type: 'slider',
+      key: "opacity",
+      label: "不透明度",
+      type: "slider",
       defaultValue: 1,
-      group: '外观',
+      group: "外观",
       constraints: { min: 0, max: 1, step: 0.05 },
     },
   ],
   variants: [
-    { name: 'default', label: '默认' },
-    { name: 'hover', label: '悬停', paramOverrides: { _state: 'hover' } },
-    { name: 'pressed', label: '按下', paramOverrides: { _state: 'pressed' } },
-    { name: 'disabled', label: '禁用', paramOverrides: { _state: 'disabled' } },
+    { name: "default", label: "默认" },
+    { name: "hover", label: "悬停", paramOverrides: { _state: "hover" } },
+    { name: "pressed", label: "按下", paramOverrides: { _state: "pressed" } },
+    { name: "disabled", label: "禁用", paramOverrides: { _state: "disabled" } },
   ],
   render(ctx: RenderContext) {
     const { draw, params, theme, utils } = ctx;
     const { width, height } = computeButtonSize(params, theme);
     const { lighten, darken, withAlpha } = utils.colors;
-    const state = (params._state as string) ?? 'default';
-    const style = (params.style as string) || 'primary';
+    const state = (params._state as string) ?? "default";
+    const style = (params.style as string) || "primary";
 
     const primary = theme.variables.primaryColor;
     const surface = theme.variables.surfaceColor;
@@ -192,28 +192,28 @@ const buttonDef: ScratchComponentDef = {
     let defaultBorderWidth: number;
 
     switch (style) {
-      case 'secondary':
+      case "secondary":
         defaultBg = surface;
         defaultText = theme.variables.textColor;
         defaultBorderColor = theme.variables.borderColor.top;
         defaultBorderWidth = theme.variables.borderWidth.top;
         break;
-      case 'outline':
-        defaultBg = 'transparent';
+      case "outline":
+        defaultBg = "transparent";
         defaultText = primary;
         defaultBorderColor = primary;
         defaultBorderWidth = 1.5;
         break;
-      case 'ghost':
-        defaultBg = 'transparent';
+      case "ghost":
+        defaultBg = "transparent";
         defaultText = primary;
-        defaultBorderColor = 'none';
+        defaultBorderColor = "none";
         defaultBorderWidth = 0;
         break;
       default: // primary
         defaultBg = primary;
         defaultText = theme.variables.onPrimaryColor;
-        defaultBorderColor = 'none';
+        defaultBorderColor = "none";
         defaultBorderWidth = 0;
         break;
     }
@@ -222,27 +222,30 @@ const buttonDef: ScratchComponentDef = {
     let bgColor = (params.bgColor as string) || defaultBg;
 
     // Hover / pressed state color derivation
-    if (state === 'hover') {
-      if (style === 'outline' || style === 'ghost') {
+    if (state === "hover") {
+      if (style === "outline" || style === "ghost") {
         bgColor = withAlpha(primary, 0.1);
       } else {
         bgColor = lighten((params.bgColor as string) || defaultBg, 0.15);
       }
     }
-    if (state === 'pressed') {
-      if (style === 'outline' || style === 'ghost') {
+    if (state === "pressed") {
+      if (style === "outline" || style === "ghost") {
         bgColor = withAlpha(primary, 0.2);
       } else {
         bgColor = darken((params.bgColor as string) || defaultBg, 0.15);
       }
     }
 
-    const opacity = state === 'disabled' ? theme.variables.disabledOpacity : (params.opacity as number);
+    const opacity = state === "disabled" ? theme.variables.disabledOpacity : (params.opacity as number);
     const textColor = (params.textColor as string) || defaultText;
-    const borderRadius = (params.borderRadius as number) < 0 ? theme.variables.borderRadius : cornersOf(params.borderRadius as number);
-    const borderColorVal = (params.borderColor as string) || ((params.borderWidth as number) >= 0 ? theme.variables.borderColor.top : defaultBorderColor);
+    const borderRadius =
+      (params.borderRadius as number) < 0 ? theme.variables.borderRadius : cornersOf(params.borderRadius as number);
+    const borderColorVal =
+      (params.borderColor as string) ||
+      ((params.borderWidth as number) >= 0 ? theme.variables.borderColor.top : defaultBorderColor);
     const borderWidthVal = (params.borderWidth as number) < 0 ? defaultBorderWidth : (params.borderWidth as number);
-    const label = (params.label as string) || '';
+    const label = (params.label as string) || "";
     const fontSize = params.fontSize as number;
     const fontWeight = params.fontWeight as string;
     const fontFamily = theme.variables.fontFamily;
@@ -256,7 +259,7 @@ const buttonDef: ScratchComponentDef = {
       fill: bgColor,
       border: {
         width: sidesOf(borderWidthVal),
-        color: sidesOf(borderWidthVal > 0 ? borderColorVal : 'none'),
+        color: sidesOf(borderWidthVal > 0 ? borderColorVal : "none"),
         radius: borderRadius,
       },
       opacity,
@@ -270,7 +273,7 @@ const buttonDef: ScratchComponentDef = {
     const totalWidth = textWidth + (hasIcon ? iconSize + gap : 0);
     let startX = (width - totalWidth) / 2;
 
-    if (hasIcon && iconPosition === 'left') {
+    if (hasIcon && iconPosition === "left") {
       utils.icons.drawIcon(draw, iconName, startX, (height - iconSize) / 2, iconSize, textColor);
       startX += iconSize + gap;
     }
@@ -284,7 +287,7 @@ const buttonDef: ScratchComponentDef = {
       });
     }
 
-    if (hasIcon && iconPosition === 'right') {
+    if (hasIcon && iconPosition === "right") {
       utils.icons.drawIcon(draw, iconName, startX + textWidth + gap, (height - iconSize) / 2, iconSize, textColor);
     }
   },

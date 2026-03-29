@@ -1,11 +1,11 @@
-import { Box, HStack, Text } from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
-import { useColorModeValue } from '../ui/color-mode';
-import { useEffect, useRef, useMemo } from 'react';
-import { renderAllFrames, renderComponent, renderSvgToCanvas } from '@/core/SvgRenderer';
-import { ComponentRegistry } from '@/core/ComponentRegistry';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
+import { Box, HStack, Text } from "@chakra-ui/react";
+import { Tooltip } from "@/components/ui/tooltip";
+import { useColorModeValue } from "../ui/color-mode";
+import { useEffect, useRef, useMemo } from "react";
+import { renderAllFrames, renderComponent, renderSvgToCanvas } from "@/core/SvgRenderer";
+import { ComponentRegistry } from "@/core/ComponentRegistry";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
 
 interface FrameItem {
   key: string;
@@ -25,7 +25,7 @@ export default function FrameStrip() {
   const globalThemeId = useProjectStore((s) => s.globalThemeId);
 
   const frames = useMemo<FrameItem[]>(() => {
-    if (!node || node.type !== 'component' || !node.componentType) return [];
+    if (!node || node.type !== "component" || !node.componentType) return [];
     const def = ComponentRegistry.get(node.componentType);
     if (!def) return [];
 
@@ -48,12 +48,7 @@ export default function FrameStrip() {
 
         for (const v of variants) {
           // Combined view for this variant
-          const combinedSvg = renderComponent(
-            node.componentType,
-            node.paramValues ?? {},
-            globalThemeId,
-            v.name
-          );
+          const combinedSvg = renderComponent(node.componentType, node.paramValues ?? {}, globalThemeId, v.name);
           result.push({
             key: `${v.name}-combined`,
             svg: combinedSvg,
@@ -90,26 +85,19 @@ export default function FrameStrip() {
     } catch {
       return [];
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, refreshCounter, globalThemeId]);
 
   if (frames.length === 0) return null;
 
   return (
-    <Box
-      borderTop="1px solid"
-      borderColor="border.emphasized"
-      px={3}
-      py={2}
-      overflowX="auto"
-    >
+    <Box borderTop="1px solid" borderColor="border.emphasized" px={3} py={2} overflowX="auto">
       <Text fontSize="2xs" color="gray.500" mb={1}>
         帧 ({frames.length})
       </Text>
       <HStack gap={2}>
         {frames.map((frame) => {
-          const isActive =
-            activeVariant === frame.variantName && activePart === frame.partId;
+          const isActive = activeVariant === frame.variantName && activePart === frame.partId;
           // First frame is active when nothing is selected
           const isDefault = !activeVariant && !activePart && frame === frames[0];
           return (
@@ -127,9 +115,19 @@ export default function FrameStrip() {
   );
 }
 
-function FrameThumb({ svg, label, isActive, onClick }: { svg: string; label: string; isActive: boolean; onClick: () => void }) {
+function FrameThumb({
+  svg,
+  label,
+  isActive,
+  onClick,
+}: {
+  svg: string;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const activeBorderColor = useColorModeValue('brand.500', 'brand.300');
+  const activeBorderColor = useColorModeValue("brand.500", "brand.300");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -147,7 +145,7 @@ function FrameThumb({ svg, label, isActive, onClick }: { svg: string; label: str
         bg="bg"
         borderRadius="md"
         border="2px solid"
-        borderColor={isActive ? activeBorderColor : 'border.emphasized'}
+        borderColor={isActive ? activeBorderColor : "border.emphasized"}
         display="flex"
         alignItems="center"
         justifyContent="center"
@@ -158,7 +156,7 @@ function FrameThumb({ svg, label, isActive, onClick }: { svg: string; label: str
         _hover={{ borderColor: activeBorderColor }}
         onClick={onClick}
       >
-        <canvas ref={canvasRef} style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }} />
+        <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%", maxHeight: "100%" }} />
       </Box>
     </Tooltip>
   );

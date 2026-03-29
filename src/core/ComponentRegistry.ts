@@ -1,4 +1,4 @@
-import type { ScratchComponentDef } from './types';
+import type { ScratchComponentDef } from "./types";
 
 class ComponentRegistryImpl {
   private components = new Map<string, ScratchComponentDef>();

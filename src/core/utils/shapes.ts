@@ -1,6 +1,6 @@
-import type { Container, Rect, Circle, Ellipse, Path } from '@svgdotjs/svg.js';
-import type { Sides, Corners } from '@/core/types';
-import { normalizeSides, normalizeCorners } from '@/core/types';
+import type { Container, Rect, Circle, Ellipse, Path } from "@svgdotjs/svg.js";
+import type { Sides, Corners } from "@/core/types";
+import { normalizeSides, normalizeCorners } from "@/core/types";
 
 // ─── Rect (with per-corner radius & per-side border) ─────────────────
 
@@ -31,17 +31,17 @@ function rectPath(x: number, y: number, w: number, h: number, r: Corners<number>
   return [
     `M${x + tl},${y}`,
     `L${x + w - tr},${y}`,
-    tr > 0 ? `A${tr},${tr},0,0,1,${x + w},${y + tr}` : '',
+    tr > 0 ? `A${tr},${tr},0,0,1,${x + w},${y + tr}` : "",
     `L${x + w},${y + h - br}`,
-    br > 0 ? `A${br},${br},0,0,1,${x + w - br},${y + h}` : '',
+    br > 0 ? `A${br},${br},0,0,1,${x + w - br},${y + h}` : "",
     `L${x + bl},${y + h}`,
-    bl > 0 ? `A${bl},${bl},0,0,1,${x},${y + h - bl}` : '',
+    bl > 0 ? `A${bl},${bl},0,0,1,${x},${y + h - bl}` : "",
     `L${x},${y + tl}`,
-    tl > 0 ? `A${tl},${tl},0,0,1,${x + tl},${y}` : '',
-    'Z',
+    tl > 0 ? `A${tl},${tl},0,0,1,${x + tl},${y}` : "",
+    "Z",
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 }
 
 function sidesEqual<T>(s: Sides<T>): boolean {
@@ -60,10 +60,10 @@ function cornersEqual<T>(c: Corners<T>): boolean {
  * - If border sides differ, draws individual border line segments.
  */
 export function drawRect(draw: Container, opts: DrawRectOptions) {
-  const { x = 0, y = 0, width, height, fill = '#ccc', border, opacity = 1 } = opts;
+  const { x = 0, y = 0, width, height, fill = "#ccc", border, opacity = 1 } = opts;
 
   const bw = border ? normalizeSides(border.width) : normalizeSides(0);
-  const bc = border ? normalizeSides(border.color) : normalizeSides('none' as string);
+  const bc = border ? normalizeSides(border.color) : normalizeSides("none" as string);
   const br = border ? normalizeCorners(border.radius) : normalizeCorners(0);
 
   // Inset fill area by border widths
@@ -79,20 +79,16 @@ export function drawRect(draw: Container, opts: DrawRectOptions) {
 
   if (uniformCorners) {
     // Simple <rect>
-    shape = draw
-      .rect(fw, fh)
-      .move(fx, fy)
-      .radius(br.topLeft)
-      .fill(fill);
+    shape = draw.rect(fw, fh).move(fx, fy).radius(br.topLeft).fill(fill);
 
-    if (uniformBorder && bw.top > 0 && bc.top !== 'none') {
+    if (uniformBorder && bw.top > 0 && bc.top !== "none") {
       shape.stroke({ color: bc.top, width: bw.top });
     }
   } else {
     // Complex path with varying corners
     shape = draw.path(rectPath(fx, fy, fw, fh, br)).fill(fill);
 
-    if (uniformBorder && bw.top > 0 && bc.top !== 'none') {
+    if (uniformBorder && bw.top > 0 && bc.top !== "none") {
       shape.stroke({ color: bc.top, width: bw.top });
     }
   }
@@ -101,25 +97,25 @@ export function drawRect(draw: Container, opts: DrawRectOptions) {
 
   // Per-side borders when sides differ
   if (!uniformBorder) {
-    if (bw.top > 0 && bc.top !== 'none') {
+    if (bw.top > 0 && bc.top !== "none") {
       draw
         .line(x + br.topLeft, y + bw.top / 2, x + width - br.topRight, y + bw.top / 2)
-        .stroke({ color: bc.top, width: bw.top, linecap: 'round' });
+        .stroke({ color: bc.top, width: bw.top, linecap: "round" });
     }
-    if (bw.right > 0 && bc.right !== 'none') {
+    if (bw.right > 0 && bc.right !== "none") {
       draw
         .line(x + width - bw.right / 2, y + br.topRight, x + width - bw.right / 2, y + height - br.bottomRight)
-        .stroke({ color: bc.right, width: bw.right, linecap: 'round' });
+        .stroke({ color: bc.right, width: bw.right, linecap: "round" });
     }
-    if (bw.bottom > 0 && bc.bottom !== 'none') {
+    if (bw.bottom > 0 && bc.bottom !== "none") {
       draw
         .line(x + br.bottomLeft, y + height - bw.bottom / 2, x + width - br.bottomRight, y + height - bw.bottom / 2)
-        .stroke({ color: bc.bottom, width: bw.bottom, linecap: 'round' });
+        .stroke({ color: bc.bottom, width: bw.bottom, linecap: "round" });
     }
-    if (bw.left > 0 && bc.left !== 'none') {
+    if (bw.left > 0 && bc.left !== "none") {
       draw
         .line(x + bw.left / 2, y + br.topLeft, x + bw.left / 2, y + height - br.bottomLeft)
-        .stroke({ color: bc.left, width: bw.left, linecap: 'round' });
+        .stroke({ color: bc.left, width: bw.left, linecap: "round" });
     }
   }
 
@@ -148,8 +144,8 @@ export function drawRoundedRect(draw: Container, opts: RoundedRectOptions): Rect
     width,
     height,
     radius = 4,
-    fill = '#ccc',
-    stroke = 'none',
+    fill = "#ccc",
+    stroke = "none",
     strokeWidth = 0,
     opacity = 1,
   } = opts;
@@ -177,7 +173,7 @@ export interface CapsuleOptions {
  * Draw a capsule shape (fully rounded ends).
  */
 export function drawCapsule(draw: Container, opts: CapsuleOptions): Rect {
-  const { x = 0, y = 0, width, height, fill = '#ccc', stroke = 'none', strokeWidth = 0 } = opts;
+  const { x = 0, y = 0, width, height, fill = "#ccc", stroke = "none", strokeWidth = 0 } = opts;
   return draw
     .rect(width, height)
     .move(x, y)
@@ -199,7 +195,7 @@ export interface CircleOptions {
  * Draw a circle.
  */
 export function drawCircle(draw: Container, opts: CircleOptions): Circle {
-  const { cx, cy, radius, fill = '#ccc', stroke = 'none', strokeWidth = 0 } = opts;
+  const { cx, cy, radius, fill = "#ccc", stroke = "none", strokeWidth = 0 } = opts;
   return draw
     .circle(radius * 2)
     .center(cx, cy)
@@ -216,13 +212,16 @@ export interface EllipseOptions {
 }
 
 export function drawEllipse(draw: Container, opts: EllipseOptions): Ellipse {
-  const { cx, cy, rx, ry, fill = '#ccc' } = opts;
-  return draw.ellipse(rx * 2, ry * 2).center(cx, cy).fill(fill);
+  const { cx, cy, rx, ry, fill = "#ccc" } = opts;
+  return draw
+    .ellipse(rx * 2, ry * 2)
+    .center(cx, cy)
+    .fill(fill);
 }
 
 /**
  * Draw an SVG path from a path string.
  */
-export function drawPath(draw: Container, d: string, fill = '#000', stroke = 'none', strokeWidth = 0): Path {
+export function drawPath(draw: Container, d: string, fill = "#000", stroke = "none", strokeWidth = 0): Path {
   return draw.path(d).fill(fill).stroke({ color: stroke, width: strokeWidth });
 }

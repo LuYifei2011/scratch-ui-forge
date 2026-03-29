@@ -1,15 +1,8 @@
-import {
-  Flex,
-  VStack,
-  HStack,
-  Heading,
-  Text,
-  Button,
-} from '@chakra-ui/react';
-import { FiPlus, FiUpload } from 'react-icons/fi';
-import { useState } from 'react';
-import { useProjectStore } from '@/store/projectStore';
-import ProjectSettingsDialog from '@/components/editor/ProjectSettingsDialog';
+import { Flex, VStack, HStack, Heading, Text, Button } from "@chakra-ui/react";
+import { FiPlus, FiUpload } from "react-icons/fi";
+import { useState } from "react";
+import { useProjectStore } from "@/store/projectStore";
+import ProjectSettingsDialog from "@/components/editor/ProjectSettingsDialog";
 
 export default function WelcomePage() {
   const openProject = useProjectStore((s) => s.openProject);
@@ -51,11 +44,7 @@ export default function WelcomePage() {
             </Text>
           </VStack>
           <HStack gap={4}>
-            <Button
-              size="lg"
-              colorPalette="brand"
-              onClick={() => setShowCreate(true)}
-            >
+            <Button size="lg" colorPalette="brand" onClick={() => setShowCreate(true)}>
               <FiPlus /> 创建新项目
             </Button>
             <Button size="lg" variant="outline" onClick={handleImport}>
@@ -65,11 +54,7 @@ export default function WelcomePage() {
         </VStack>
       </Flex>
 
-      <ProjectSettingsDialog
-        open={showCreate}
-        onClose={() => setShowCreate(false)}
-        mode="create"
-      />
+      <ProjectSettingsDialog open={showCreate} onClose={() => setShowCreate(false)} mode="create" />
     </Flex>
   );
 }

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface EditorState {
   /** Currently selected node ID */
@@ -44,7 +44,7 @@ export const useEditorStore = create<EditorState>()(
       setCompactMode: (v) => set({ compactMode: v }),
     }),
     {
-      name: 'scratch-ui-forge:editor',
+      name: "scratch-ui-forge:editor",
       // Only persist display preferences, not transient selection/refresh state
       partialize: (s) => ({ previewLight: s.previewLight, compactMode: s.compactMode }),
     }

@@ -1,4 +1,4 @@
-import type { Container, Text as SvgText } from '@svgdotjs/svg.js';
+import type { Container, Text as SvgText } from "@svgdotjs/svg.js";
 
 // Cached canvas for text measurement
 let _measureCanvas: HTMLCanvasElement | null = null;
@@ -9,13 +9,13 @@ let _measureCanvas: HTMLCanvasElement | null = null;
 export function measureText(
   text: string,
   fontSize: number,
-  fontFamily = 'Helvetica, Arial, sans-serif',
-  fontWeight = 'normal'
+  fontFamily = "Helvetica, Arial, sans-serif",
+  fontWeight = "normal"
 ): number {
   if (!_measureCanvas) {
-    _measureCanvas = document.createElement('canvas');
+    _measureCanvas = document.createElement("canvas");
   }
-  const ctx = _measureCanvas.getContext('2d')!;
+  const ctx = _measureCanvas.getContext("2d")!;
   ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
   return ctx.measureText(text).width;
 }
@@ -27,8 +27,8 @@ export interface TextOptions {
   fontSize?: number;
   fontFamily?: string;
   fill?: string;
-  anchor?: 'start' | 'middle' | 'end';
-  verticalAlign?: 'top' | 'middle' | 'bottom';
+  anchor?: "start" | "middle" | "end";
+  verticalAlign?: "top" | "middle" | "bottom";
   maxWidth?: number;
   fontWeight?: string;
 }
@@ -43,17 +43,17 @@ export function drawText(draw: Container, opts: TextOptions): SvgText {
     x = 0,
     y = 0,
     fontSize = 14,
-    fontFamily = 'Helvetica, Arial, sans-serif',
-    fill = '#000',
-    anchor = 'start',
-    verticalAlign = 'top',
-    fontWeight = 'normal',
+    fontFamily = "Helvetica, Arial, sans-serif",
+    fill = "#000",
+    anchor = "start",
+    verticalAlign = "top",
+    fontWeight = "normal",
   } = opts;
 
   const baselineMap = {
-    top: 'hanging',
-    middle: 'central',
-    bottom: 'alphabetic',
+    top: "hanging",
+    middle: "central",
+    bottom: "alphabetic",
   } as const;
 
   const t = draw
@@ -65,9 +65,9 @@ export function drawText(draw: Container, opts: TextOptions): SvgText {
       weight: fontWeight,
     })
     .fill(fill)
-    .attr('x', x)
-    .attr('y', y)
-    .attr('dominant-baseline', baselineMap[verticalAlign]);
+    .attr("x", x)
+    .attr("y", y)
+    .attr("dominant-baseline", baselineMap[verticalAlign]);
 
   return t;
 }
@@ -80,14 +80,14 @@ export function drawCenteredText(
   text: string,
   cx: number,
   cy: number,
-  opts: Omit<TextOptions, 'text' | 'x' | 'y' | 'anchor' | 'verticalAlign'> = {}
+  opts: Omit<TextOptions, "text" | "x" | "y" | "anchor" | "verticalAlign"> = {}
 ): SvgText {
   return drawText(draw, {
     ...opts,
     text,
     x: cx,
     y: cy,
-    anchor: 'middle',
-    verticalAlign: 'middle',
+    anchor: "middle",
+    verticalAlign: "middle",
   });
 }

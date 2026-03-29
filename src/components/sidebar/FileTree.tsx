@@ -1,11 +1,11 @@
-import { Box, Flex, Text, Icon, Input } from '@chakra-ui/react';
-import { useColorModeValue } from '../ui/color-mode';
-import { FiFolder, FiChevronRight, FiChevronDown } from 'react-icons/fi';
-import { MdWidgets } from 'react-icons/md';
-import { useState, useCallback, useMemo } from 'react';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
-import TreeContextMenu from './TreeContextMenu';
+import { Box, Flex, Text, Icon, Input } from "@chakra-ui/react";
+import { useColorModeValue } from "../ui/color-mode";
+import { FiFolder, FiChevronRight, FiChevronDown } from "react-icons/fi";
+import { MdWidgets } from "react-icons/md";
+import { useState, useCallback, useMemo } from "react";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
+import TreeContextMenu from "./TreeContextMenu";
 
 interface FileTreeProps {
   parentId: string | null;
@@ -42,16 +42,16 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
   const renameNode = useProjectStore((s) => s.renameNode);
   const selectedNodeId = useEditorStore((s) => s.selectedNodeId);
   const selectNode = useEditorStore((s) => s.selectNode);
-  
+
   const [expanded, setExpanded] = useState(true);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  
+
   // Drag and drop state
-  const [dragState, setDragState] = useState<'top' | 'bottom' | 'inside' | null>(null);
-  
+  const [dragState, setDragState] = useState<"top" | "bottom" | "inside" | null>(null);
+
   // Inline edit state
   const [isRenaming, setIsRenaming] = useState(false);
-  const [renameValue, setRenameValue] = useState(node?.name ?? '');
+  const [renameValue, setRenameValue] = useState(node?.name ?? "");
 
   const startRenaming = () => {
     if (node) {
@@ -71,45 +71,42 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
   };
 
   const isSelected = selectedNodeId === nodeId;
-  const selectedBg = useColorModeValue('brand.50', 'whiteAlpha.100');
-  const hoverBg = useColorModeValue('gray.100', 'whiteAlpha.50');
-  const inputBg = useColorModeValue('white', 'gray.700');
-  const inputColor = useColorModeValue('black', 'white');
+  const selectedBg = useColorModeValue("brand.50", "whiteAlpha.100");
+  const hoverBg = useColorModeValue("gray.100", "whiteAlpha.50");
+  const inputBg = useColorModeValue("white", "gray.700");
+  const inputColor = useColorModeValue("black", "white");
 
-  const handleContextMenu = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setContextMenu({ x: e.clientX, y: e.clientY });
-    },
-    []
-  );
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  }, []);
 
   if (!node) return null;
 
-  const isFolder = node.type === 'folder';
+  const isFolder = node.type === "folder";
 
   const handleDragStart = (e: React.DragEvent) => {
     e.stopPropagation();
-    e.dataTransfer.setData('application/node-id', nodeId);
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData("application/node-id", nodeId);
+    e.dataTransfer.effectAllowed = "move";
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = "move";
 
     const rect = e.currentTarget.getBoundingClientRect();
     const y = e.clientY - rect.top;
     const h = rect.height;
 
     if (y < h * 0.25) {
-      setDragState('top');
+      setDragState("top");
     } else if (y > h * 0.75) {
-      setDragState('bottom');
+      setDragState("bottom");
     } else {
-      setDragState(isFolder ? 'inside' : 'bottom');
+      setDragState(isFolder ? "inside" : "bottom");
     }
   };
 
@@ -122,11 +119,11 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
     e.preventDefault();
     e.stopPropagation();
     setDragState(null);
-    
-    const draggedId = e.dataTransfer.getData('application/node-id');
+
+    const draggedId = e.dataTransfer.getData("application/node-id");
     if (!draggedId || draggedId === nodeId) return;
 
-    if (dragState === 'inside') {
+    if (dragState === "inside") {
       moveNode(draggedId, nodeId);
       setExpanded(true);
     } else {
@@ -157,27 +154,15 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
         onContextMenu={handleContextMenu}
         userSelect="none"
         fontSize="sm"
-        borderTop={dragState === 'top' ? '2px solid' : 'none'}
+        borderTop={dragState === "top" ? "2px solid" : "none"}
         borderTopColor="blue.400"
-        borderBottom={dragState === 'bottom' ? '2px solid' : 'none'}
+        borderBottom={dragState === "bottom" ? "2px solid" : "none"}
         borderBottomColor="blue.400"
-        bg={dragState === 'inside' ? 'blue.500' : (isSelected ? selectedBg : 'transparent')}
-        opacity={dragState === 'inside' ? 0.8 : 1}
+        bg={dragState === "inside" ? "blue.500" : isSelected ? selectedBg : "transparent"}
+        opacity={dragState === "inside" ? 0.8 : 1}
       >
-        {isFolder && (
-          <Icon
-            as={expanded ? FiChevronDown : FiChevronRight}
-            mr={1}
-            boxSize={3}
-            color="gray.500"
-          />
-        )}
-        <Icon
-          as={isFolder ? FiFolder : MdWidgets}
-          mr={2}
-          boxSize={3.5}
-          color={isFolder ? 'yellow.400' : 'brand.400'}
-        />
+        {isFolder && <Icon as={expanded ? FiChevronDown : FiChevronRight} mr={1} boxSize={3} color="gray.500" />}
+        <Icon as={isFolder ? FiFolder : MdWidgets} mr={2} boxSize={3.5} color={isFolder ? "yellow.400" : "brand.400"} />
         {isRenaming ? (
           <Box flex={1} mr={2} onClick={(e) => e.stopPropagation()}>
             <Input
@@ -190,8 +175,8 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleRenameSave();
-                if (e.key === 'Escape') {
+                if (e.key === "Enter") handleRenameSave();
+                if (e.key === "Escape") {
                   setIsRenaming(false);
                   if (node) setRenameValue(node.name);
                 }

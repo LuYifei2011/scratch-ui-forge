@@ -1,6 +1,6 @@
-import { Select, createListCollection } from '@chakra-ui/react';
-import type { ComponentProps } from 'react';
-import { useMemo } from 'react';
+import { Select, createListCollection } from "@chakra-ui/react";
+import type { ComponentProps } from "react";
+import { useMemo } from "react";
 
 export interface SimpleSelectOption {
   label: string;
@@ -8,10 +8,7 @@ export interface SimpleSelectOption {
   disabled?: boolean;
 }
 
-type RootProps = Omit<
-  ComponentProps<typeof Select.Root>,
-  'collection' | 'value' | 'onValueChange' | 'multiple'
->;
+type RootProps = Omit<ComponentProps<typeof Select.Root>, "collection" | "value" | "onValueChange" | "multiple">;
 
 interface SimpleSelectProps extends RootProps {
   value: string;
@@ -34,7 +31,7 @@ export default function SimpleSelect({
     <Select.Root
       collection={collection}
       value={value ? [value] : []}
-      onValueChange={(details) => onValueChange(details.value[0] ?? '')}
+      onValueChange={(details) => onValueChange(details.value[0] ?? "")}
       positioning={{ sameWidth: true, ...positioning }}
       {...rootProps}
     >

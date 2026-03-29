@@ -1,5 +1,5 @@
-import type { Theme, ResolvedTheme, ThemeVariables, NormalizedThemeVariables } from './types';
-import { normalizeSides, normalizeCorners } from './types';
+import type { Theme, ResolvedTheme, ThemeVariables, NormalizedThemeVariables } from "./types";
+import { normalizeSides, normalizeCorners } from "./types";
 
 class ThemeEngineImpl {
   private themes = new Map<string, Theme>();
@@ -28,7 +28,7 @@ class ThemeEngineImpl {
     }
 
     let variables: ThemeVariables = { ...theme.variables };
-    let renderOverride: ((ctx: import('./types').RenderContext) => void) | undefined;
+    let renderOverride: ((ctx: import("./types").RenderContext) => void) | undefined;
 
     if (componentId && theme.componentOverrides?.[componentId]) {
       const override = theme.componentOverrides[componentId];
@@ -72,7 +72,7 @@ class ThemeEngineImpl {
     for (const key of Object.keys(resolved)) {
       let val = resolved[key];
       let depth = 0;
-      while (typeof val === 'string' && val.startsWith('$') && depth < maxDepth) {
+      while (typeof val === "string" && val.startsWith("$") && depth < maxDepth) {
         const refKey = val.slice(1);
         if (refKey in resolved) {
           val = resolved[refKey];

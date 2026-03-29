@@ -1,16 +1,16 @@
-import type { ScratchComponentDef, RenderContext, ResolvedTheme } from '@/core/types';
-import { measureText } from '@/core/utils/text';
+import type { ScratchComponentDef, RenderContext, ResolvedTheme } from "@/core/types";
+import { measureText } from "@/core/utils/text";
 
 const LABEL_GAP = 6;
 
 function computeTrackSize(params: Record<string, unknown>, theme: ResolvedTheme) {
   const trackWidth = (params.trackWidth as number) || 200;
   const trackHeight = (params.trackHeight as number) || 6;
-  const label = (params.label as string) || '';
+  const label = (params.label as string) || "";
   const labelFontSize = (params.labelFontSize as number) || theme.variables.fontSize;
   const fontFamily = theme.variables.fontFamily;
 
-  const w = label ? Math.max(trackWidth, measureText(label, labelFontSize, fontFamily, 'normal')) : trackWidth;
+  const w = label ? Math.max(trackWidth, measureText(label, labelFontSize, fontFamily, "normal")) : trackWidth;
   const h = label ? Math.ceil(labelFontSize * 1.3 + LABEL_GAP + trackHeight) : trackHeight;
 
   return { width: Math.ceil(w), height: Math.ceil(h) };
@@ -22,23 +22,23 @@ function computeKnobSize(params: Record<string, unknown>) {
 }
 
 const sliderDef: ScratchComponentDef = {
-  id: 'slider',
-  name: '滑块',
-  category: '基础',
+  id: "slider",
+  name: "滑块",
+  category: "基础",
   // Top-level render draws the combined preview; parts generate separate exports
   render(ctx: RenderContext) {
     // Combined preview: track + knob together
     const { draw, params, theme, utils } = ctx;
-    const state = (params._state as string) ?? 'default';
+    const state = (params._state as string) ?? "default";
     const value = params.value as number;
-    const opacity = state === 'disabled' ? theme.variables.disabledOpacity : (params.opacity as number);
+    const opacity = state === "disabled" ? theme.variables.disabledOpacity : (params.opacity as number);
     const trackColor = (params.trackColor as string) || theme.variables.borderColor.top;
     const fillColor = (params.fillColor as string) || theme.variables.primaryColor;
     const knobColor = (params.knobColor as string) || theme.variables.backgroundColor;
     const trackWidth = params.trackWidth as number;
     const trackHeight = params.trackHeight as number;
     const knobSize = (params.knobSize as number) || 20;
-    const label = (params.label as string) || '';
+    const label = (params.label as string) || "";
     const labelFontSize = (params.labelFontSize as number) || theme.variables.fontSize;
     const labelColor = theme.variables.labelColor;
     const fontFamily = theme.variables.fontFamily;
@@ -56,8 +56,8 @@ const sliderDef: ScratchComponentDef = {
         fontSize: labelFontSize,
         fontFamily,
         fill: labelColor,
-        anchor: 'start',
-        verticalAlign: 'top',
+        anchor: "start",
+        verticalAlign: "top",
       });
       contentY += labelFontSize * 1.3 + LABEL_GAP;
     }
@@ -105,124 +105,124 @@ const sliderDef: ScratchComponentDef = {
   },
   params: [
     {
-      key: 'width',
-      label: '宽度',
-      type: 'number',
+      key: "width",
+      label: "宽度",
+      type: "number",
       defaultValue: 0,
-      group: '尺寸',
+      group: "尺寸",
       constraints: { min: 0, max: 600, step: 1 },
-      description: '0 = 自动',
+      description: "0 = 自动",
     },
     {
-      key: 'height',
-      label: '高度',
-      type: 'number',
+      key: "height",
+      label: "高度",
+      type: "number",
       defaultValue: 0,
-      group: '尺寸',
+      group: "尺寸",
       constraints: { min: 0, max: 200, step: 1 },
-      description: '0 = 自动',
+      description: "0 = 自动",
     },
     {
-      key: 'label',
-      label: '标签',
-      type: 'string',
-      defaultValue: '',
-      group: '内容',
+      key: "label",
+      label: "标签",
+      type: "string",
+      defaultValue: "",
+      group: "内容",
       common: true,
     },
     {
-      key: 'value',
-      label: '值',
-      type: 'slider',
+      key: "value",
+      label: "值",
+      type: "slider",
       defaultValue: 50,
-      group: '内容',
+      group: "内容",
       common: true,
       constraints: { min: 0, max: 100, step: 1 },
     },
     {
-      key: 'trackWidth',
-      label: '轨道宽度',
-      type: 'number',
+      key: "trackWidth",
+      label: "轨道宽度",
+      type: "number",
       defaultValue: 200,
-      group: '尺寸',
+      group: "尺寸",
       constraints: { min: 40, max: 600, step: 1 },
     },
     {
-      key: 'trackHeight',
-      label: '轨道高度',
-      type: 'number',
+      key: "trackHeight",
+      label: "轨道高度",
+      type: "number",
       defaultValue: 6,
-      group: '尺寸',
+      group: "尺寸",
       constraints: { min: 2, max: 20, step: 1 },
     },
     {
-      key: 'knobSize',
-      label: '旋钮大小',
-      type: 'number',
+      key: "knobSize",
+      label: "旋钮大小",
+      type: "number",
       defaultValue: 20,
-      group: '尺寸',
+      group: "尺寸",
       constraints: { min: 8, max: 60, step: 1 },
     },
     {
-      key: 'labelFontSize',
-      label: '标签字号',
-      type: 'number',
+      key: "labelFontSize",
+      label: "标签字号",
+      type: "number",
       defaultValue: 14,
-      group: '文字',
+      group: "文字",
       constraints: { min: 8, max: 36, step: 1 },
     },
     {
-      key: 'trackColor',
-      label: '轨道颜色',
-      type: 'color',
-      defaultValue: '',
-      group: '颜色',
-      themeVariable: 'borderColor',
+      key: "trackColor",
+      label: "轨道颜色",
+      type: "color",
+      defaultValue: "",
+      group: "颜色",
+      themeVariable: "borderColor",
     },
     {
-      key: 'fillColor',
-      label: '填充颜色',
-      type: 'color',
-      defaultValue: '',
-      group: '颜色',
-      themeVariable: 'primaryColor',
+      key: "fillColor",
+      label: "填充颜色",
+      type: "color",
+      defaultValue: "",
+      group: "颜色",
+      themeVariable: "primaryColor",
     },
     {
-      key: 'knobColor',
-      label: '旋钮颜色',
-      type: 'color',
-      defaultValue: '',
-      group: '颜色',
-      themeVariable: 'backgroundColor',
+      key: "knobColor",
+      label: "旋钮颜色",
+      type: "color",
+      defaultValue: "",
+      group: "颜色",
+      themeVariable: "backgroundColor",
     },
     {
-      key: 'opacity',
-      label: '不透明度',
-      type: 'slider',
+      key: "opacity",
+      label: "不透明度",
+      type: "slider",
       defaultValue: 1,
-      group: '外观',
+      group: "外观",
       constraints: { min: 0, max: 1, step: 0.05 },
     },
   ],
   variants: [
-    { name: 'default', label: '默认' },
-    { name: 'disabled', label: '禁用', paramOverrides: { _state: 'disabled' } },
+    { name: "default", label: "默认" },
+    { name: "disabled", label: "禁用", paramOverrides: { _state: "disabled" } },
   ],
   parts: [
     {
-      id: 'track',
-      name: '轨道',
+      id: "track",
+      name: "轨道",
       render(ctx: RenderContext) {
         const { draw, params, theme, utils } = ctx;
         const { width, height } = computeTrackSize(params, theme);
-        const state = (params._state as string) ?? 'default';
+        const state = (params._state as string) ?? "default";
         const value = params.value as number;
-        const opacity = state === 'disabled' ? theme.variables.disabledOpacity : (params.opacity as number);
+        const opacity = state === "disabled" ? theme.variables.disabledOpacity : (params.opacity as number);
         const trackColor = (params.trackColor as string) || theme.variables.borderColor.top;
         const fillColor = (params.fillColor as string) || theme.variables.primaryColor;
         const trackWidth = params.trackWidth as number;
         const trackHeight = params.trackHeight as number;
-        const label = (params.label as string) || '';
+        const label = (params.label as string) || "";
         const labelFontSize = (params.labelFontSize as number) || theme.variables.fontSize;
         const labelColor = theme.variables.labelColor;
         const fontFamily = theme.variables.fontFamily;
@@ -237,8 +237,8 @@ const sliderDef: ScratchComponentDef = {
             fontSize: labelFontSize,
             fontFamily,
             fill: labelColor,
-            anchor: 'start',
-            verticalAlign: 'top',
+            anchor: "start",
+            verticalAlign: "top",
           });
           trackY = height - trackHeight;
         }
@@ -270,13 +270,13 @@ const sliderDef: ScratchComponentDef = {
       },
     },
     {
-      id: 'knob',
-      name: '旋钮',
+      id: "knob",
+      name: "旋钮",
       render(ctx: RenderContext) {
         const { draw, params, theme, utils } = ctx;
         const { width, height } = computeKnobSize(params);
-        const state = (params._state as string) ?? 'default';
-        const opacity = state === 'disabled' ? theme.variables.disabledOpacity : (params.opacity as number);
+        const state = (params._state as string) ?? "default";
+        const opacity = state === "disabled" ? theme.variables.disabledOpacity : (params.opacity as number);
         const knobColor = (params.knobColor as string) || theme.variables.backgroundColor;
         const fillColor = (params.fillColor as string) || theme.variables.primaryColor;
 

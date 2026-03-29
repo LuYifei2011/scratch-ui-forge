@@ -1,7 +1,7 @@
-import { Box, Text, Flex, Checkbox } from '@chakra-ui/react';
-import { ComponentRegistry } from '@/core/ComponentRegistry';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
+import { Box, Text, Flex, Checkbox } from "@chakra-ui/react";
+import { ComponentRegistry } from "@/core/ComponentRegistry";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
 
 export default function VariantSelector() {
   const selectedNodeId = useEditorStore((s) => s.selectedNodeId);
@@ -9,7 +9,7 @@ export default function VariantSelector() {
   const updateSelectedVariants = useProjectStore((s) => s.updateSelectedVariants);
   const triggerRefresh = useEditorStore((s) => s.triggerRefresh);
 
-  if (!node || node.type !== 'component' || !node.componentType) return null;
+  if (!node || node.type !== "component" || !node.componentType) return null;
 
   const def = ComponentRegistry.get(node.componentType);
   if (!def) return null;
@@ -43,9 +43,15 @@ export default function VariantSelector() {
               checked={selected.includes(v.name)}
               onCheckedChange={() => toggleVariant(v.name)}
               colorPalette="brand"
-            ><Checkbox.HiddenInput /><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control><Checkbox.Label>
-              <Text fontSize="xs">{v.label}</Text>
-            </Checkbox.Label></Checkbox.Root>
+            >
+              <Checkbox.HiddenInput />
+              <Checkbox.Control>
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+              <Checkbox.Label>
+                <Text fontSize="xs">{v.label}</Text>
+              </Checkbox.Label>
+            </Checkbox.Root>
           </Box>
         ))}
       </Flex>

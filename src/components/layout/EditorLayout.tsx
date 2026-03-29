@@ -1,5 +1,5 @@
-import { Flex, Box } from '@chakra-ui/react';
-import type { ReactNode } from 'react';
+import { Flex, Box } from "@chakra-ui/react";
+import type { ReactNode } from "react";
 
 interface EditorLayoutProps {
   sidebar: ReactNode;
@@ -23,13 +23,7 @@ export default function EditorLayout({ sidebar, editor, preview }: EditorLayoutP
       </Box>
 
       {/* Editor panel */}
-      <Box
-        flex={1}
-        minW="300px"
-        borderRight="1px solid"
-        borderColor="border.emphasized"
-        overflow="auto"
-      >
+      <Box flex={1} minW="300px" borderRight="1px solid" borderColor="border.emphasized" overflow="auto">
         {editor}
       </Box>
 

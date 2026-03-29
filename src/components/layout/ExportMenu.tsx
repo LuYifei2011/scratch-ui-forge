@@ -1,13 +1,13 @@
-import { Menu, IconButton, Portal } from '@chakra-ui/react';
-import { FiDownload, FiPackage, FiBox, FiFileText } from 'react-icons/fi';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
-import { exportAllVariantsZip, exportBatchZip, exportSprite3 } from '@/services/exporter';
-import { renderComponent } from '@/core/SvgRenderer';
-import { saveAs } from 'file-saver';
-import { saveProjectToFile } from '@/services/persistence';
-import { Tooltip } from '../ui/tooltip';
-import { useId } from 'react';
+import { Menu, IconButton, Portal } from "@chakra-ui/react";
+import { FiDownload, FiPackage, FiBox, FiFileText } from "react-icons/fi";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
+import { exportAllVariantsZip, exportBatchZip, exportSprite3 } from "@/services/exporter";
+import { renderComponent } from "@/core/SvgRenderer";
+import { saveAs } from "file-saver";
+import { saveProjectToFile } from "@/services/persistence";
+import { Tooltip } from "../ui/tooltip";
+import { useId } from "react";
 
 export default function ExportMenu() {
   const triggerId = useId();
@@ -18,15 +18,15 @@ export default function ExportMenu() {
   const activeProjectDescription = useProjectStore((s) => s.activeProjectDescription);
 
   const node = nodes.find((n) => n.id === selectedNodeId);
-  const isValidComponentNode = node && node.type === 'component' && node.componentType;
+  const isValidComponentNode = node && node.type === "component" && node.componentType;
 
   const handleExportSvg = () => {
     if (!isValidComponentNode) return;
     const params = node.paramValues ?? {};
     const variants = node.selectedVariants;
-    const variantName = variants?.[0] ?? 'default';
+    const variantName = variants?.[0] ?? "default";
     const svg = renderComponent(node.componentType!, params, globalThemeId, variantName);
-    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
     saveAs(blob, `${node.name}-${variantName}.svg`);
   };
 
@@ -45,17 +45,11 @@ export default function ExportMenu() {
   const handleExportSprite3 = async () => {
     if (!isValidComponentNode) return;
     const params = node.paramValues ?? {};
-    await exportSprite3(
-      node.componentType!,
-      params,
-      globalThemeId,
-      node.selectedVariants,
-      node.name
-    );
+    await exportSprite3(node.componentType!, params, globalThemeId, node.selectedVariants, node.name);
   };
 
   const handleExportAll = async () => {
-    const componentNodes = nodes.filter((n) => n.type === 'component');
+    const componentNodes = nodes.filter((n) => n.type === "component");
     await exportBatchZip(componentNodes, globalThemeId);
   };
 
@@ -92,7 +86,7 @@ export default function ExportMenu() {
                   px={3}
                   py={1.5}
                   fontSize="sm"
-                  _hover={{ bg: 'bg.muted' }}
+                  _hover={{ bg: "bg.muted" }}
                   display="flex"
                   alignItems="center"
                   gap={2}
@@ -106,7 +100,7 @@ export default function ExportMenu() {
                   px={3}
                   py={1.5}
                   fontSize="sm"
-                  _hover={{ bg: 'bg.muted' }}
+                  _hover={{ bg: "bg.muted" }}
                   display="flex"
                   alignItems="center"
                   gap={2}
@@ -120,7 +114,7 @@ export default function ExportMenu() {
                   px={3}
                   py={1.5}
                   fontSize="sm"
-                  _hover={{ bg: 'bg.muted' }}
+                  _hover={{ bg: "bg.muted" }}
                   display="flex"
                   alignItems="center"
                   gap={2}
@@ -137,7 +131,7 @@ export default function ExportMenu() {
               px={3}
               py={1.5}
               fontSize="sm"
-              _hover={{ bg: 'bg.muted' }}
+              _hover={{ bg: "bg.muted" }}
               display="flex"
               alignItems="center"
               gap={2}
@@ -151,7 +145,7 @@ export default function ExportMenu() {
               px={3}
               py={1.5}
               fontSize="sm"
-              _hover={{ bg: 'bg.muted' }}
+              _hover={{ bg: "bg.muted" }}
               display="flex"
               alignItems="center"
               gap={2}

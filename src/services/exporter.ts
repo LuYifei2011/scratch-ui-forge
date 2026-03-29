@@ -1,12 +1,12 @@
-import { saveAs } from 'file-saver';
-import JSZip from 'jszip';
-import { md5 } from 'js-md5';
-import { renderComponent, renderAllFrames } from '@/core/SvgRenderer';
-import { ComponentRegistry } from '@/core/ComponentRegistry';
-import type { ProjectNode } from '@/core/types';
+import { saveAs } from "file-saver";
+import JSZip from "jszip";
+import { md5 } from "js-md5";
+import { renderComponent, renderAllFrames } from "@/core/SvgRenderer";
+import { ComponentRegistry } from "@/core/ComponentRegistry";
+import type { ProjectNode } from "@/core/types";
 
 function svgBlob(svgStr: string): Blob {
-  return new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  return new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
 }
 
 /**
@@ -42,7 +42,7 @@ export async function exportAllVariantsZip(
       : `${componentId}-${frame.variantName}.svg`;
     zip.file(name, frame.svg);
   }
-  const blob = await zip.generateAsync({ type: 'blob' });
+  const blob = await zip.generateAsync({ type: "blob" });
   saveAs(blob, zipName ?? `${componentId}-variants.zip`);
 }
 
@@ -51,13 +51,13 @@ export async function exportAllVariantsZip(
  */
 export async function exportBatchZip(
   nodes: ProjectNode[],
-  globalThemeId = 'fluent-light',
-  zipName = 'scratch-ui-forge-export.zip'
+  globalThemeId = "fluent-light",
+  zipName = "scratch-ui-forge-export.zip"
 ): Promise<void> {
   const zip = new JSZip();
 
   for (const node of nodes) {
-    if (node.type !== 'component' || !node.componentType) continue;
+    if (node.type !== "component" || !node.componentType) continue;
     const def = ComponentRegistry.get(node.componentType);
     if (!def) continue;
 
@@ -66,14 +66,12 @@ export async function exportBatchZip(
 
     const folder = zip.folder(node.name) ?? zip;
     for (const frame of results) {
-      const name = frame.partId
-        ? `${frame.variantName}-${frame.partId}.svg`
-        : `${frame.variantName}.svg`;
+      const name = frame.partId ? `${frame.variantName}-${frame.partId}.svg` : `${frame.variantName}.svg`;
       folder.file(name, frame.svg);
     }
   }
 
-  const blob = await zip.generateAsync({ type: 'blob' });
+  const blob = await zip.generateAsync({ type: "blob" });
   saveAs(blob, zipName);
 }
 
@@ -95,9 +93,7 @@ export async function exportSprite3(
   const zip = new JSZip();
 
   const costumes = results.map((frame) => {
-    const costumeName = frame.partId
-      ? `${frame.variantName}-${frame.partId}`
-      : frame.variantName;
+    const costumeName = frame.partId ? `${frame.variantName}-${frame.partId}` : frame.variantName;
     const svgBytes = new TextEncoder().encode(frame.svg);
     const hash = md5(svgBytes);
     const fileName = `${hash}.svg`;
@@ -105,7 +101,7 @@ export async function exportSprite3(
     return {
       name: costumeName,
       bitmapResolution: 1,
-      dataFormat: 'svg',
+      dataFormat: "svg",
       assetId: hash,
       md5ext: `${hash}.svg`,
       rotationCenterX: 0,
@@ -131,11 +127,11 @@ export async function exportSprite3(
     size: 100,
     direction: 90,
     draggable: false,
-    rotationStyle: 'all around',
+    rotationStyle: "all around",
   };
 
-  zip.file('sprite.json', JSON.stringify(manifest, null, 2));
+  zip.file("sprite.json", JSON.stringify(manifest, null, 2));
 
-  const blob = await zip.generateAsync({ type: 'blob' });
+  const blob = await zip.generateAsync({ type: "blob" });
   saveAs(blob, `${name}.sprite3`);
 }

@@ -1,11 +1,11 @@
-import { Flex } from '@chakra-ui/react';
-import AppBar from '@/components/layout/AppBar';
-import EditorLayout from '@/components/layout/EditorLayout';
-import Sidebar from '@/components/sidebar/Sidebar';
-import EditorPanel from '@/components/editor/EditorPanel';
-import PreviewCanvas from '@/components/preview/PreviewCanvas';
-import { useEffect } from 'react';
-import { useProjectStore } from '@/store/projectStore';
+import { Flex } from "@chakra-ui/react";
+import AppBar from "@/components/layout/AppBar";
+import EditorLayout from "@/components/layout/EditorLayout";
+import Sidebar from "@/components/sidebar/Sidebar";
+import EditorPanel from "@/components/editor/EditorPanel";
+import PreviewCanvas from "@/components/preview/PreviewCanvas";
+import { useEffect } from "react";
+import { useProjectStore } from "@/store/projectStore";
 
 export default function ComponentEditorPage() {
   const nodes = useProjectStore((s) => s.nodes);
@@ -27,11 +27,7 @@ export default function ComponentEditorPage() {
   return (
     <Flex direction="column" h="100%">
       <AppBar />
-      <EditorLayout
-        sidebar={<Sidebar />}
-        editor={<EditorPanel />}
-        preview={<PreviewCanvas />}
-      />
+      <EditorLayout sidebar={<Sidebar />} editor={<EditorPanel />} preview={<PreviewCanvas />} />
     </Flex>
   );
 }

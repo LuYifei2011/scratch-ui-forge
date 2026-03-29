@@ -1,30 +1,20 @@
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Input,
-  NumberInput,
-  Slider,
-  Switch,
-  Accordion,
-} from '@chakra-ui/react';
-import { Tooltip } from '@/components/ui/tooltip';
-import SimpleSelect from '@/components/ui/simple-select';
-import { ComponentRegistry } from '@/core/ComponentRegistry';
-import { ThemeEngine } from '@/core/ThemeEngine';
-import { useProjectStore } from '@/store/projectStore';
-import { useEditorStore } from '@/store/editorStore';
-import type { ComponentParam, ResolvedTheme, Sides, Corners } from '@/core/types';
-import IconPicker from './IconPicker';
+import { Box, VStack, HStack, Text, Input, NumberInput, Slider, Switch, Accordion } from "@chakra-ui/react";
+import { Tooltip } from "@/components/ui/tooltip";
+import SimpleSelect from "@/components/ui/simple-select";
+import { ComponentRegistry } from "@/core/ComponentRegistry";
+import { ThemeEngine } from "@/core/ThemeEngine";
+import { useProjectStore } from "@/store/projectStore";
+import { useEditorStore } from "@/store/editorStore";
+import type { ComponentParam, ResolvedTheme, Sides, Corners } from "@/core/types";
+import IconPicker from "./IconPicker";
 
 /** Extract a scalar value from a Sides/Corners object or pass through primitives. */
 function extractThemeDefault(val: unknown): string | number | undefined {
   if (val == null) return undefined;
-  if (typeof val === 'string' || typeof val === 'number') return val;
-  if (typeof val === 'object') {
-    if ('top' in (val as Sides<unknown>)) return (val as Sides<unknown>).top as string | number;
-    if ('topLeft' in (val as Corners<unknown>)) return (val as Corners<unknown>).topLeft as string | number;
+  if (typeof val === "string" || typeof val === "number") return val;
+  if (typeof val === "object") {
+    if ("top" in (val as Sides<unknown>)) return (val as Sides<unknown>).top as string | number;
+    if ("topLeft" in (val as Corners<unknown>)) return (val as Corners<unknown>).topLeft as string | number;
   }
   return undefined;
 }
@@ -36,7 +26,7 @@ export default function PropertyPanel() {
   const triggerRefresh = useEditorStore((s) => s.triggerRefresh);
   const compactMode = useEditorStore((s) => s.compactMode);
 
-  if (!node || node.type !== 'component' || !node.componentType) {
+  if (!node || node.type !== "component" || !node.componentType) {
     return (
       <Box p={6} textAlign="center">
         <Text fontSize="sm" color="gray.500">
@@ -60,7 +50,7 @@ export default function PropertyPanel() {
   // Group advanced params
   const groups = new Map<string, ComponentParam[]>();
   for (const p of advancedParams) {
-    const group = p.group ?? '其他';
+    const group = p.group ?? "其他";
     if (!groups.has(group)) groups.set(group, []);
     groups.get(group)!.push(p);
   }
@@ -88,7 +78,7 @@ export default function PropertyPanel() {
               value={getValue(param.key, param.defaultValue)}
               onChange={(v) => setValue(param.key, v)}
               theme={theme}
-              size={compactMode ? 'xs' : 'sm'}
+              size={compactMode ? "xs" : "sm"}
             />
           ))}
         </VStack>
@@ -104,7 +94,8 @@ export default function PropertyPanel() {
                 </Text>
                 <Accordion.ItemIndicator />
               </Accordion.ItemTrigger>
-              <Accordion.ItemContent px={3} pb={2}><Accordion.ItemBody>
+              <Accordion.ItemContent px={3} pb={2}>
+                <Accordion.ItemBody>
                   <VStack gap={3} align="stretch">
                     {params.map((param) => (
                       <ParamControl
@@ -113,11 +104,12 @@ export default function PropertyPanel() {
                         value={getValue(param.key, param.defaultValue)}
                         onChange={(v) => setValue(param.key, v)}
                         theme={theme}
-                        size={compactMode ? 'xs' : 'sm'}
+                        size={compactMode ? "xs" : "sm"}
                       />
                     ))}
                   </VStack>
-                </Accordion.ItemBody></Accordion.ItemContent>
+                </Accordion.ItemBody>
+              </Accordion.ItemContent>
             </Accordion.Item>
           ))}
         </Accordion.Root>
@@ -131,14 +123,12 @@ interface ParamControlProps {
   value: unknown;
   onChange: (value: unknown) => void;
   theme: ResolvedTheme;
-  size?: 'xs' | 'sm';
+  size?: "xs" | "sm";
 }
 
-function ParamControl({ param, value, onChange, theme, size = 'sm' }: ParamControlProps) {
+function ParamControl({ param, value, onChange, theme, size = "sm" }: ParamControlProps) {
   // Resolve the theme default for display (extract scalar from Sides/Corners)
-  const rawThemeDefault = param.themeVariable
-    ? theme.variables[param.themeVariable]
-    : undefined;
+  const rawThemeDefault = param.themeVariable ? theme.variables[param.themeVariable] : undefined;
   const themeDefault = extractThemeDefault(rawThemeDefault);
 
   return (
@@ -150,15 +140,15 @@ function ParamControl({ param, value, onChange, theme, size = 'sm' }: ParamContr
           </Text>
         </Tooltip>
       </HStack>
-      {param.type === 'string' && (
+      {param.type === "string" && (
         <Input
           size={size}
-          value={(value as string) ?? ''}
+          value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder={param.description}
         />
       )}
-      {param.type === 'number' && (
+      {param.type === "number" && (
         <NumberInput.Root
           size={size}
           value={String((value as number) ?? 0)}
@@ -174,7 +164,7 @@ function ParamControl({ param, value, onChange, theme, size = 'sm' }: ParamContr
           </NumberInput.Control>
         </NumberInput.Root>
       )}
-      {param.type === 'slider' && (
+      {param.type === "slider" && (
         <HStack>
           <Slider.Root
             value={[(value as number) ?? 0]}
@@ -192,45 +182,41 @@ function ParamControl({ param, value, onChange, theme, size = 'sm' }: ParamContr
             </Slider.Control>
           </Slider.Root>
           <Text fontSize="xs" w="40px" textAlign="right">
-            {typeof value === 'number' ? (value % 1 === 0 ? value : value.toFixed(2)) : value as string}
+            {typeof value === "number" ? (value % 1 === 0 ? value : value.toFixed(2)) : (value as string)}
           </Text>
         </HStack>
       )}
-      {param.type === 'color' && (
+      {param.type === "color" && (
         <HStack>
           <Input
             type="color"
             size={size}
-            w={size === 'xs' ? "24px" : "40px"}
-            h={size === 'xs' ? "24px" : "32px"}
+            w={size === "xs" ? "24px" : "40px"}
+            h={size === "xs" ? "24px" : "32px"}
             p={0}
             border="none"
-            value={(value as string) || (typeof themeDefault === 'string' ? themeDefault : '#000000')}
+            value={(value as string) || (typeof themeDefault === "string" ? themeDefault : "#000000")}
             onChange={(e) => onChange(e.target.value)}
           />
           <Input
             size={size}
             flex={1}
-            value={(value as string) ?? ''}
+            value={(value as string) ?? ""}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={typeof themeDefault === 'string' ? `主题默认 ${themeDefault}` : '留空使用主题默认'}
+            placeholder={typeof themeDefault === "string" ? `主题默认 ${themeDefault}` : "留空使用主题默认"}
           />
         </HStack>
       )}
-      {param.type === 'boolean' && (
-        <Switch.Root
-          checked={!!value}
-          onCheckedChange={(details) => onChange(details.checked)}
-          colorPalette="brand"
-        >
+      {param.type === "boolean" && (
+        <Switch.Root checked={!!value} onCheckedChange={(details) => onChange(details.checked)} colorPalette="brand">
           <Switch.HiddenInput />
           <Switch.Control />
         </Switch.Root>
       )}
-      {param.type === 'select' && (
+      {param.type === "select" && (
         <SimpleSelect
           size={size}
-          value={(value as string) ?? ''}
+          value={(value as string) ?? ""}
           onValueChange={(nextValue) => onChange(nextValue)}
           options={(param.constraints?.options ?? []).map((opt) => ({
             label: opt.label,
@@ -238,9 +224,7 @@ function ParamControl({ param, value, onChange, theme, size = 'sm' }: ParamContr
           }))}
         />
       )}
-      {param.type === 'icon' && (
-        <IconPicker value={(value as string) ?? ''} onChange={onChange} size={size} />
-      )}
+      {param.type === "icon" && <IconPicker value={(value as string) ?? ""} onChange={onChange} size={size} />}
     </Box>
   );
 }

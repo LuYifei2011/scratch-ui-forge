@@ -1,13 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider } from '@/components/ui/provider';
-import ComponentEditorPage from '@/routes/ComponentEditorPage';
-import SceneEditorPage from '@/routes/SceneEditorPage';
-import WelcomePage from '@/routes/WelcomePage';
-import { useProjectStore } from '@/store/projectStore';
-import { getActiveProjectId } from '@/services/persistence';
-import { initializeApp } from '@/init';
-import { useEffect, useState } from 'react';
-import '@/styles/scratchFonts';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Provider } from "@/components/ui/provider";
+import ComponentEditorPage from "@/routes/ComponentEditorPage";
+import SceneEditorPage from "@/routes/SceneEditorPage";
+import WelcomePage from "@/routes/WelcomePage";
+import { useProjectStore } from "@/store/projectStore";
+import { getActiveProjectId } from "@/services/persistence";
+import { initializeApp } from "@/init";
+import { useEffect, useState } from "react";
+import "@/styles/scratchFonts";
 
 initializeApp();
 
@@ -54,9 +54,9 @@ function AppRoutes() {
 function App() {
   return (
     <Provider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </Provider>
   );
 }

@@ -1,6 +1,6 @@
-import { Flex, Text, Icon, VStack } from '@chakra-ui/react';
-import { MdConstruction } from 'react-icons/md';
-import AppBar from '@/components/layout/AppBar';
+import { Flex, Text, Icon, VStack } from "@chakra-ui/react";
+import { MdConstruction } from "react-icons/md";
+import AppBar from "@/components/layout/AppBar";
 
 export default function SceneEditorPage() {
   return (

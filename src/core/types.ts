@@ -1,4 +1,4 @@
-import type { Container } from '@svgdotjs/svg.js';
+import type { Container } from "@svgdotjs/svg.js";
 
 // ─── Border / Spacing Primitives ──────────────────────────────────────
 
@@ -30,7 +30,7 @@ export function cornersOf<T>(value: T): Corners<T> {
 
 /** Normalize shorthand → Sides. If already a Sides object, return as-is. */
 export function normalizeSides<T>(input: T | Sides<T>): Sides<T> {
-  if (input !== null && typeof input === 'object' && 'top' in (input as object)) {
+  if (input !== null && typeof input === "object" && "top" in (input as object)) {
     return input as Sides<T>;
   }
   return sidesOf(input as T);
@@ -38,7 +38,7 @@ export function normalizeSides<T>(input: T | Sides<T>): Sides<T> {
 
 /** Normalize shorthand → Corners. If already a Corners object, return as-is. */
 export function normalizeCorners<T>(input: T | Corners<T>): Corners<T> {
-  if (input !== null && typeof input === 'object' && 'topLeft' in (input as object)) {
+  if (input !== null && typeof input === "object" && "topLeft" in (input as object)) {
     return input as Corners<T>;
   }
   return cornersOf(input as T);
@@ -46,14 +46,7 @@ export function normalizeCorners<T>(input: T | Corners<T>): Corners<T> {
 
 // ─── Component Parameter Declaration ─────────────────────────────────
 
-export type ParamType =
-  | 'number'
-  | 'string'
-  | 'color'
-  | 'boolean'
-  | 'select'
-  | 'slider'
-  | 'icon';
+export type ParamType = "number" | "string" | "color" | "boolean" | "select" | "slider" | "icon";
 
 export interface ParamConstraints {
   min?: number;
@@ -90,10 +83,10 @@ export interface VariantDef {
 // ─── Render Context ───────────────────────────────────────────────────
 
 export interface RenderUtils {
-  text: typeof import('@/core/utils/text');
-  shapes: typeof import('@/core/utils/shapes');
-  icons: typeof import('@/core/utils/icons');
-  colors: typeof import('@/core/utils/colors');
+  text: typeof import("@/core/utils/text");
+  shapes: typeof import("@/core/utils/shapes");
+  icons: typeof import("@/core/utils/icons");
+  colors: typeof import("@/core/utils/colors");
 }
 
 export interface RenderContext {
@@ -198,7 +191,7 @@ export interface ResolvedTheme {
 export interface ProjectNode {
   id: string;
   name: string;
-  type: 'folder' | 'component';
+  type: "folder" | "component";
   parentId: string | null;
   order: number;
   /** Only for type === 'component' */
@@ -211,7 +204,7 @@ export interface ProjectNode {
 // ─── Export ───────────────────────────────────────────────────────────
 
 export interface ExportOptions {
-  format: 'svg' | 'sprite3' | 'zip';
+  format: "svg" | "sprite3" | "zip";
   nodeIds: string[];
   includeVariants?: boolean;
 }
