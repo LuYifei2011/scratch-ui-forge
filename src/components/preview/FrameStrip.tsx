@@ -95,7 +95,7 @@ function CostumeThumb({
         _hover={{ borderColor: activeBorderColor }}
         onClick={onClick}
       >
-        <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%", maxHeight: "100%" }} />
+        <canvas ref={canvasRef} style={{ display: "block", maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
       </Box>
     </Tooltip>
   );
