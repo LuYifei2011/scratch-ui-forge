@@ -44,6 +44,13 @@ export function getIconNames(): string[] {
 }
 
 /**
+ * Get SVG path data for a given icon name.
+ */
+export function getIconPath(name: string): string | undefined {
+  return iconPaths[name];
+}
+
+/**
  * Register a new custom icon path.
  */
 export function registerIcon(name: string, pathD: string): void {
