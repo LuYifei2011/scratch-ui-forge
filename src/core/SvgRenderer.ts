@@ -1,11 +1,5 @@
 import { SVG, type Container } from "@svgdotjs/svg.js";
-import { ComponentRegistry } from "./ComponentRegistry";
-import { ThemeEngine } from "./ThemeEngine";
-import type { RenderContext, RenderUtils, ScratchComponentDef } from "./types";
-import * as textUtils from "./utils/text";
-import * as shapeUtils from "./utils/shapes";
-import * as iconUtils from "./utils/icons";
-import * as colorUtils from "./utils/colors";
+import type { DrawFn } from "./types";
 import sansSerifUrl from "scratch-render-fonts/src/NotoSans-Medium.ttf?url";
 import serifUrl from "scratch-render-fonts/src/SourceSerifPro-Regular.otf?url";
 import handwritingUrl from "scratch-render-fonts/src/handlee-regular.ttf?url";
@@ -13,35 +7,6 @@ import markerUrl from "scratch-render-fonts/src/Knewave.ttf?url";
 import curlyUrl from "scratch-render-fonts/src/Griffy-Regular.ttf?url";
 import pixelUrl from "scratch-render-fonts/src/Grand9K-Pixel.ttf?url";
 import scratchUrl from "scratch-render-fonts/src/Scratch.ttf?url";
-
-const utils: RenderUtils = {
-  text: textUtils,
-  shapes: shapeUtils,
-  icons: iconUtils,
-  colors: colorUtils,
-};
-
-/**
- * Merge default params → user params → variant overrides.
- */
-function mergeParams(
-  def: ScratchComponentDef,
-  params: Record<string, unknown>,
-  variantName?: string
-): Record<string, unknown> {
-  const merged: Record<string, unknown> = {};
-  for (const p of def.params) {
-    merged[p.key] = p.defaultValue;
-  }
-  Object.assign(merged, params);
-  if (variantName) {
-    const variant = def.variants.find((v) => v.name === variantName);
-    if (variant?.paramOverrides) {
-      Object.assign(merged, variant.paramOverrides);
-    }
-  }
-  return merged;
-}
 
 /**
  * Safety margin (px) added on every side when fitting viewbox to group bbox.
@@ -53,15 +18,6 @@ const STROKE_OVERFLOW_PAD = 1;
 
 /**
  * Resize the canvas viewbox to fit the actual rendered content in `group`.
- *
- * Why group instead of root SVG bbox:
- *   - group.bbox() aggregates child bboxes and is more reliable in headless contexts.
- *
- * Why min(0, box.x) for viewbox origin:
- *   - drawRect insets the path by borderWidth/2 so the centered stroke reaches x=0.
- *   - bbox() returns the path geometry (starting at borderWidth/2), so a naive
- *     viewbox(box.x, …) would clip the outer half of edge strokes.
- *   - Using min(0, box.x) ensures the viewbox always starts at or before x=0.
  */
 function fitCanvasToGroup(canvas: Container, group: Container): void {
   const box = group.bbox();
@@ -74,161 +30,28 @@ function fitCanvasToGroup(canvas: Container, group: Container): void {
   }
 }
 
+// ─── Core render helper ───────────────────────────────────────────────
+
 /**
- * Render a component (or a specific part) to an SVG string.
+ * Execute a draw function inside a headless SVG canvas and return the SVG string.
+ * This is the central rendering primitive used by theme `generateCostumes`.
  */
-export function renderComponent(
-  componentId: string,
-  params: Record<string, unknown>,
-  themeId: string,
-  variantName?: string,
-  partId?: string
-): string {
-  const def = ComponentRegistry.get(componentId);
-  if (!def) throw new Error(`Component "${componentId}" not registered`);
-
-  const mergedParams = mergeParams(def, params, variantName);
-  const theme = ThemeEngine.resolve(themeId, componentId);
-
-  let renderFn: (ctx: RenderContext) => void;
-
-  if (partId && def.parts) {
-    const part = def.parts.find((p) => p.id === partId);
-    if (!part) throw new Error(`Part "${partId}" not found in "${componentId}"`);
-    renderFn = part.render;
-  } else {
-    renderFn = theme.renderOverride ?? def.render;
-  }
-
+export function renderToSvg(fn: DrawFn): string {
   const canvas = SVG() as Container;
-  // All content goes into a group so group.bbox() gives reliable content bounds.
   const group = canvas.group();
-
-  const ctx: RenderContext = {
-    draw: group as unknown as Container,
-    params: mergedParams,
-    theme,
-    utils,
-    width: 0,
-    height: 0,
-  };
-
-  renderFn(ctx);
+  fn(group as unknown as Container);
   fitCanvasToGroup(canvas, group as unknown as Container);
   return canvas.svg();
 }
 
 /**
- * Render all variants of a component, returning an array of {variantName, svg}.
+ * Render a draw function into a DOM container (for live preview).
  */
-export function renderAllVariants(
-  componentId: string,
-  params: Record<string, unknown>,
-  themeId: string,
-  selectedVariants?: string[]
-): { variantName: string; svg: string }[] {
-  const def = ComponentRegistry.get(componentId);
-  if (!def) throw new Error(`Component "${componentId}" not registered`);
-
-  const variants = selectedVariants ? def.variants.filter((v) => selectedVariants.includes(v.name)) : def.variants;
-
-  return variants.map((v) => ({
-    variantName: v.name,
-    svg: renderComponent(componentId, params, themeId, v.name),
-  }));
-}
-
-/**
- * Render all frames: variant × part combinations.
- * For non-part components, returns one frame per variant.
- * For multi-part components, returns variant × part frames.
- */
-export function renderAllFrames(
-  componentId: string,
-  params: Record<string, unknown>,
-  themeId: string,
-  selectedVariants?: string[]
-): { variantName: string; variantLabel: string; partId?: string; partName?: string; svg: string }[] {
-  const def = ComponentRegistry.get(componentId);
-  if (!def) throw new Error(`Component "${componentId}" not registered`);
-
-  const variants = selectedVariants ? def.variants.filter((v) => selectedVariants.includes(v.name)) : def.variants;
-
-  const results: { variantName: string; variantLabel: string; partId?: string; partName?: string; svg: string }[] = [];
-
-  for (const v of variants) {
-    if (def.parts && def.parts.length > 0) {
-      for (const part of def.parts) {
-        results.push({
-          variantName: v.name,
-          variantLabel: v.label,
-          partId: part.id,
-          partName: part.name,
-          svg: renderComponent(componentId, params, themeId, v.name, part.id),
-        });
-      }
-    } else {
-      results.push({
-        variantName: v.name,
-        variantLabel: v.label,
-        svg: renderComponent(componentId, params, themeId, v.name),
-      });
-    }
-  }
-
-  return results;
-}
-
-/**
- * Get the parts definition for a component, or null if single-part.
- */
-export function getComponentParts(componentId: string) {
-  const def = ComponentRegistry.get(componentId);
-  return def?.parts ?? null;
-}
-
-/**
- * Render in a real DOM container (for live preview).
- */
-export function renderToContainer(
-  container: HTMLElement,
-  componentId: string,
-  params: Record<string, unknown>,
-  themeId: string,
-  variantName?: string,
-  partId?: string
-): void {
-  const def = ComponentRegistry.get(componentId);
-  if (!def) return;
-
+export function renderToContainer(container: HTMLElement, fn: DrawFn): void {
   container.innerHTML = "";
-
-  const mergedParams = mergeParams(def, params, variantName);
-  const theme = ThemeEngine.resolve(themeId, componentId);
-
-  let renderFn: (ctx: RenderContext) => void;
-
-  if (partId && def.parts) {
-    const part = def.parts.find((p) => p.id === partId);
-    if (!part) return;
-    renderFn = part.render;
-  } else {
-    renderFn = theme.renderOverride ?? def.render;
-  }
-
   const canvas = SVG().addTo(container);
   const group = canvas.group();
-
-  const ctx: RenderContext = {
-    draw: group as unknown as Container,
-    params: mergedParams,
-    theme,
-    utils,
-    width: 0,
-    height: 0,
-  };
-
-  renderFn(ctx);
+  fn(group as unknown as Container);
   fitCanvasToGroup(canvas as unknown as Container, group as unknown as Container);
 }
 

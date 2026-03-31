@@ -6,10 +6,9 @@ interface EditorState {
   selectedNodeId: string | null;
   selectNode: (id: string | null) => void;
 
-  /** Active variant/part for main preview (frame selection) */
-  activeVariant: string | null;
-  activePart: string | null;
-  setActiveFrame: (variant: string | null, part?: string | null) => void;
+  /** Active costume index for main preview */
+  activeCostumeIndex: number;
+  setActiveCostumeIndex: (index: number) => void;
 
   /** Refresh counter — increment to force preview re-render */
   refreshCounter: number;
@@ -28,11 +27,10 @@ export const useEditorStore = create<EditorState>()(
   persist(
     (set) => ({
       selectedNodeId: null,
-      selectNode: (id) => set({ selectedNodeId: id, activeVariant: null, activePart: null }),
+      selectNode: (id) => set({ selectedNodeId: id, activeCostumeIndex: 0 }),
 
-      activeVariant: null,
-      activePart: null,
-      setActiveFrame: (variant, part = null) => set({ activeVariant: variant, activePart: part }),
+      activeCostumeIndex: 0,
+      setActiveCostumeIndex: (index) => set({ activeCostumeIndex: index }),
 
       refreshCounter: 0,
       triggerRefresh: () => set((s) => ({ refreshCounter: s.refreshCounter + 1 })),
@@ -45,7 +43,6 @@ export const useEditorStore = create<EditorState>()(
     }),
     {
       name: "scratch-ui-forge:editor",
-      // Only persist display preferences, not transient selection/refresh state
       partialize: (s) => ({ previewLight: s.previewLight, compactMode: s.compactMode }),
     }
   )

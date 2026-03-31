@@ -1,300 +1,163 @@
-import type { ScratchComponentDef, RenderContext, ResolvedTheme } from "@/core/types";
-import { measureText } from "@/core/utils/text";
+import type { Container } from "@svgdotjs/svg.js";
+import { drawCapsule, drawCircle } from "@/core/utils/shapes";
+import { drawText } from "@/core/utils/text";
+
+// ─── Slider Track Options ────────────────────────────────────────────
+
+export interface SliderTrackBaseOptions {
+  /** Track background color */
+  trackColor: string;
+  /** Filled portion color */
+  fillColor: string;
+  /** Font family */
+  fontFamily: string;
+}
+
+export interface SliderTrackStyleOptions {
+  /** Progress value 0–100. Default: 50 */
+  value?: number;
+  /** Track width. Default: 200 */
+  trackWidth?: number;
+  /** Track height. Default: 6 */
+  trackHeight?: number;
+  /** Text label above the track. Default: "" */
+  label?: string;
+  /** Label font size. Default: 14 */
+  labelFontSize?: number;
+  /** Label text color. Default: "#E0E0E0" */
+  labelColor?: string;
+  /** Opacity. Default: 1 */
+  opacity?: number;
+  /** Extra SVG attributes */
+  extraAttrs?: Record<string, string>;
+}
+
+export type SliderTrackOptions = SliderTrackBaseOptions & SliderTrackStyleOptions;
+
+// ─── Slider Knob Options ─────────────────────────────────────────────
+
+export interface SliderKnobBaseOptions {
+  /** Knob fill color */
+  knobColor: string;
+  /** Knob stroke/ring color */
+  strokeColor: string;
+}
+
+export interface SliderKnobStyleOptions {
+  /** Knob diameter. Default: 20 */
+  knobSize?: number;
+  /** Stroke width. Default: 2 */
+  strokeWidth?: number;
+  /** Opacity. Default: 1 */
+  opacity?: number;
+  /** Extra SVG attributes */
+  extraAttrs?: Record<string, string>;
+}
+
+export type SliderKnobOptions = SliderKnobBaseOptions & SliderKnobStyleOptions;
+
+// ─── Defaults ────────────────────────────────────────────────────────
+
+const TRACK_DEFAULTS = {
+  value: 50,
+  trackWidth: 200,
+  trackHeight: 6,
+  label: "",
+  labelFontSize: 14,
+  labelColor: "#E0E0E0",
+  opacity: 1,
+};
+
+const KNOB_DEFAULTS = {
+  knobSize: 20,
+  strokeWidth: 2,
+  opacity: 1,
+};
 
 const LABEL_GAP = 6;
 
-function computeTrackSize(params: Record<string, unknown>, theme: ResolvedTheme) {
-  const trackWidth = (params.trackWidth as number) || 200;
-  const trackHeight = (params.trackHeight as number) || 6;
-  const label = (params.label as string) || "";
-  const labelFontSize = (params.labelFontSize as number) || theme.variables.fontSize;
-  const fontFamily = theme.variables.fontFamily;
+// ─── Render: Slider Track ────────────────────────────────────────────
 
-  const w = label ? Math.max(trackWidth, measureText(label, labelFontSize, fontFamily, "normal")) : trackWidth;
-  const h = label ? Math.ceil(labelFontSize * 1.3 + LABEL_GAP + trackHeight) : trackHeight;
+export function renderSliderTrack(draw: Container, opts: SliderTrackOptions): void {
+  const o = { ...TRACK_DEFAULTS, ...opts };
 
-  return { width: Math.ceil(w), height: Math.ceil(h) };
-}
+  const trackWidth = o.trackWidth;
+  const trackHeight = o.trackHeight;
+  const label = o.label;
+  const labelArea = label ? Math.ceil(o.labelFontSize * 1.3 + LABEL_GAP) : 0;
+  const totalHeight = labelArea + trackHeight;
 
-function computeKnobSize(params: Record<string, unknown>) {
-  const knobSize = (params.knobSize as number) || 20;
-  return { width: knobSize, height: knobSize };
-}
+  let trackY = (totalHeight - trackHeight) / 2;
 
-const sliderDef: ScratchComponentDef = {
-  id: "slider",
-  name: "滑块",
-  category: "基础",
-  // Top-level render draws the combined preview; parts generate separate exports
-  render(ctx: RenderContext) {
-    // Combined preview: track + knob together
-    const { draw, params, theme, utils } = ctx;
-    const state = (params._state as string) ?? "default";
-    const value = params.value as number;
-    const opacity = state === "disabled" ? theme.variables.disabledOpacity : (params.opacity as number);
-    const trackColor = (params.trackColor as string) || theme.variables.borderColor.top;
-    const fillColor = (params.fillColor as string) || theme.variables.primaryColor;
-    const knobColor = (params.knobColor as string) || theme.variables.backgroundColor;
-    const trackWidth = params.trackWidth as number;
-    const trackHeight = params.trackHeight as number;
-    const knobSize = (params.knobSize as number) || 20;
-    const label = (params.label as string) || "";
-    const labelFontSize = (params.labelFontSize as number) || theme.variables.fontSize;
-    const labelColor = theme.variables.labelColor;
-    const fontFamily = theme.variables.fontFamily;
-    const labelArea = label ? Math.ceil(labelFontSize * 1.3 + LABEL_GAP) : 0;
-    const height = labelArea + Math.max(trackHeight, knobSize);
-
-    let contentY = 0;
-
-    // Label
-    if (label) {
-      utils.text.drawText(draw, {
-        text: label,
-        x: 0,
-        y: contentY + labelFontSize * 0.15,
-        fontSize: labelFontSize,
-        fontFamily,
-        fill: labelColor,
-        anchor: "start",
-        verticalAlign: "top",
-      });
-      contentY += labelFontSize * 1.3 + LABEL_GAP;
-    }
-
-    const knobRadius = knobSize / 2;
-    const trackY = contentY + (height - contentY - trackHeight) / 2;
-    const actualTrackY = Math.max(contentY, trackY);
-    const fillWidth = (trackWidth * value) / 100;
-
-    // Track background
-    utils.shapes.drawCapsule(draw, {
+  // Label
+  if (label) {
+    drawText(draw, {
+      text: label,
       x: 0,
-      y: actualTrackY,
-      width: trackWidth,
+      y: 0,
+      fontSize: o.labelFontSize,
+      fontFamily: o.fontFamily,
+      fill: o.labelColor,
+      anchor: "start",
+      verticalAlign: "top",
+    });
+    trackY = totalHeight - trackHeight;
+  }
+
+  // Track background
+  drawCapsule(draw, {
+    x: 0,
+    y: trackY,
+    width: trackWidth,
+    height: trackHeight,
+    fill: o.trackColor,
+  });
+
+  // Fill
+  const fillWidth = (trackWidth * o.value) / 100;
+  if (fillWidth > 0) {
+    drawCapsule(draw, {
+      x: 0,
+      y: trackY,
+      width: Math.max(fillWidth, trackHeight),
       height: trackHeight,
-      fill: trackColor,
+      fill: o.fillColor,
     });
+  }
 
-    // Fill
-    if (fillWidth > 0) {
-      utils.shapes.drawCapsule(draw, {
-        x: 0,
-        y: actualTrackY,
-        width: Math.max(fillWidth, trackHeight),
-        height: trackHeight,
-        fill: fillColor,
-      });
+  if (o.opacity < 1) {
+    draw.opacity(o.opacity);
+  }
+
+  if (o.extraAttrs) {
+    for (const [k, v] of Object.entries(o.extraAttrs)) {
+      draw.attr(k, v);
     }
+  }
+}
 
-    // Knob (in combined preview)
-    const knobCx = fillWidth;
-    const knobCy = actualTrackY + trackHeight / 2;
-    utils.shapes.drawCircle(draw, {
-      cx: Math.max(knobRadius, Math.min(knobCx, trackWidth - knobRadius)),
-      cy: knobCy,
-      radius: knobRadius,
-      fill: knobColor,
-      stroke: fillColor,
-      strokeWidth: 2,
-    });
+// ─── Render: Slider Knob ─────────────────────────────────────────────
 
-    if (opacity < 1) {
-      draw.opacity(opacity);
+export function renderSliderKnob(draw: Container, opts: SliderKnobOptions): void {
+  const o = { ...KNOB_DEFAULTS, ...opts };
+  const size = o.knobSize;
+
+  drawCircle(draw, {
+    cx: size / 2,
+    cy: size / 2,
+    radius: size / 2 - 1,
+    fill: o.knobColor,
+    stroke: o.strokeColor,
+    strokeWidth: o.strokeWidth,
+  });
+
+  if (o.opacity < 1) {
+    draw.opacity(o.opacity);
+  }
+
+  if (o.extraAttrs) {
+    for (const [k, v] of Object.entries(o.extraAttrs)) {
+      draw.attr(k, v);
     }
-  },
-  params: [
-    {
-      key: "width",
-      label: "宽度",
-      type: "number",
-      defaultValue: 0,
-      group: "尺寸",
-      constraints: { min: 0, max: 600, step: 1 },
-      description: "0 = 自动",
-    },
-    {
-      key: "height",
-      label: "高度",
-      type: "number",
-      defaultValue: 0,
-      group: "尺寸",
-      constraints: { min: 0, max: 200, step: 1 },
-      description: "0 = 自动",
-    },
-    {
-      key: "label",
-      label: "标签",
-      type: "string",
-      defaultValue: "",
-      group: "内容",
-      common: true,
-    },
-    {
-      key: "value",
-      label: "值",
-      type: "slider",
-      defaultValue: 50,
-      group: "内容",
-      common: true,
-      constraints: { min: 0, max: 100, step: 1 },
-    },
-    {
-      key: "trackWidth",
-      label: "轨道宽度",
-      type: "number",
-      defaultValue: 200,
-      group: "尺寸",
-      constraints: { min: 40, max: 600, step: 1 },
-    },
-    {
-      key: "trackHeight",
-      label: "轨道高度",
-      type: "number",
-      defaultValue: 6,
-      group: "尺寸",
-      constraints: { min: 2, max: 20, step: 1 },
-    },
-    {
-      key: "knobSize",
-      label: "旋钮大小",
-      type: "number",
-      defaultValue: 20,
-      group: "尺寸",
-      constraints: { min: 8, max: 60, step: 1 },
-    },
-    {
-      key: "labelFontSize",
-      label: "标签字号",
-      type: "number",
-      defaultValue: 14,
-      group: "文字",
-      constraints: { min: 8, max: 36, step: 1 },
-    },
-    {
-      key: "trackColor",
-      label: "轨道颜色",
-      type: "color",
-      defaultValue: "",
-      group: "颜色",
-      themeVariable: "borderColor",
-    },
-    {
-      key: "fillColor",
-      label: "填充颜色",
-      type: "color",
-      defaultValue: "",
-      group: "颜色",
-      themeVariable: "primaryColor",
-    },
-    {
-      key: "knobColor",
-      label: "旋钮颜色",
-      type: "color",
-      defaultValue: "",
-      group: "颜色",
-      themeVariable: "backgroundColor",
-    },
-    {
-      key: "opacity",
-      label: "不透明度",
-      type: "slider",
-      defaultValue: 1,
-      group: "外观",
-      constraints: { min: 0, max: 1, step: 0.05 },
-    },
-  ],
-  variants: [
-    { name: "default", label: "默认" },
-    { name: "disabled", label: "禁用", paramOverrides: { _state: "disabled" } },
-  ],
-  parts: [
-    {
-      id: "track",
-      name: "轨道",
-      render(ctx: RenderContext) {
-        const { draw, params, theme, utils } = ctx;
-        const { width, height } = computeTrackSize(params, theme);
-        const state = (params._state as string) ?? "default";
-        const value = params.value as number;
-        const opacity = state === "disabled" ? theme.variables.disabledOpacity : (params.opacity as number);
-        const trackColor = (params.trackColor as string) || theme.variables.borderColor.top;
-        const fillColor = (params.fillColor as string) || theme.variables.primaryColor;
-        const trackWidth = params.trackWidth as number;
-        const trackHeight = params.trackHeight as number;
-        const label = (params.label as string) || "";
-        const labelFontSize = (params.labelFontSize as number) || theme.variables.fontSize;
-        const labelColor = theme.variables.labelColor;
-        const fontFamily = theme.variables.fontFamily;
-
-        let trackY = (height - trackHeight) / 2;
-
-        if (label) {
-          utils.text.drawText(draw, {
-            text: label,
-            x: 0,
-            y: 0,
-            fontSize: labelFontSize,
-            fontFamily,
-            fill: labelColor,
-            anchor: "start",
-            verticalAlign: "top",
-          });
-          trackY = height - trackHeight;
-        }
-
-        // Track background
-        utils.shapes.drawCapsule(draw, {
-          x: 0,
-          y: trackY,
-          width: Math.min(trackWidth, width),
-          height: trackHeight,
-          fill: trackColor,
-        });
-
-        // Fill
-        const fillWidth = (Math.min(trackWidth, width) * value) / 100;
-        if (fillWidth > 0) {
-          utils.shapes.drawCapsule(draw, {
-            x: 0,
-            y: trackY,
-            width: Math.max(fillWidth, trackHeight),
-            height: trackHeight,
-            fill: fillColor,
-          });
-        }
-
-        if (opacity < 1) {
-          draw.opacity(opacity);
-        }
-      },
-    },
-    {
-      id: "knob",
-      name: "旋钮",
-      render(ctx: RenderContext) {
-        const { draw, params, theme, utils } = ctx;
-        const { width, height } = computeKnobSize(params);
-        const state = (params._state as string) ?? "default";
-        const opacity = state === "disabled" ? theme.variables.disabledOpacity : (params.opacity as number);
-        const knobColor = (params.knobColor as string) || theme.variables.backgroundColor;
-        const fillColor = (params.fillColor as string) || theme.variables.primaryColor;
-
-        utils.shapes.drawCircle(draw, {
-          cx: width / 2,
-          cy: height / 2,
-          radius: width / 2 - 1,
-          fill: knobColor,
-          stroke: fillColor,
-          strokeWidth: 2,
-        });
-
-        if (opacity < 1) {
-          draw.opacity(opacity);
-        }
-      },
-    },
-  ],
-};
-
-export default sliderDef;
+  }
+}

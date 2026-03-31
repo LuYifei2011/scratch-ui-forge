@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useProjectStore } from "@/store/projectStore";
 import { useEditorStore } from "@/store/editorStore";
 import SimpleSelect from "@/components/ui/simple-select";
-import { ComponentRegistry } from "@/core/ComponentRegistry";
+import { ThemeRegistry } from "@/core/ThemeRegistry";
 
 interface NewComponentModalProps {
   isOpen: boolean;
@@ -11,9 +11,10 @@ interface NewComponentModalProps {
 }
 
 export default function NewComponentModal({ isOpen, onClose }: NewComponentModalProps) {
-  const components = ComponentRegistry.list();
+  const globalThemeId = useProjectStore((s) => s.globalThemeId);
+  const components = ThemeRegistry.getComponentList(globalThemeId);
   const [name, setName] = useState("");
-  const [componentType, setComponentType] = useState(components[0]?.id ?? "");
+  const [componentType, setComponentType] = useState(components[0]?.key ?? "");
   const addComponent = useProjectStore((s) => s.addComponent);
   const selectedNodeId = useEditorStore((s) => s.selectedNodeId);
   const nodes = useProjectStore((s) => s.nodes);
@@ -27,8 +28,8 @@ export default function NewComponentModal({ isOpen, onClose }: NewComponentModal
   };
 
   const handleCreate = () => {
-    const def = ComponentRegistry.get(componentType);
-    const finalName = name.trim() || def?.name || componentType;
+    const compDef = ThemeRegistry.getComponent(globalThemeId, componentType);
+    const finalName = name.trim() || compDef?.name || componentType;
     const newId = addComponent(finalName, getParent(), componentType);
     selectNode(newId);
     setName("");
@@ -61,8 +62,8 @@ export default function NewComponentModal({ isOpen, onClose }: NewComponentModal
                     value={componentType}
                     onValueChange={setComponentType}
                     options={components.map((c) => ({
-                      label: `${c.name} (${c.id})`,
-                      value: c.id,
+                      label: `${c.def.name} (${c.key})`,
+                      value: c.key,
                     }))}
                   />
                 </Field.Root>

@@ -1,5 +1,5 @@
 import { openDB, type IDBPDatabase } from "idb";
-import type { ProjectNode } from "@/core/types";
+import type { ProjectNode, ThemeColors } from "@/core/types";
 
 const DB_NAME = "scratch-ui-forge";
 const DB_VERSION = 2;
@@ -13,6 +13,7 @@ export interface ProjectData {
   description: string;
   nodes: ProjectNode[];
   globalThemeId: string;
+  themeColors?: Partial<ThemeColors>;
   createdAt: number;
   updatedAt: number;
 }

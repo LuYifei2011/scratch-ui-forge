@@ -5,7 +5,7 @@ import { renderButton } from "@/definitions/components/ButtonComponent";
 import { renderCheckbox } from "@/definitions/components/CheckboxComponent";
 import { renderToggle } from "@/definitions/components/ToggleComponent";
 import { renderSliderTrack, renderSliderKnob } from "@/definitions/components/SliderComponent";
-import { lighten, darken, withAlpha } from "@/core/utils/colors";
+import { darken, lighten } from "@/core/utils/colors";
 import {
   labelParam,
   fontSizeParam,
@@ -14,105 +14,63 @@ import {
   iconParam,
   iconPositionParam,
   sizeParams,
-  buttonStyleParam,
-  borderRadiusParam,
   borderWidthParam,
 } from "@/definitions/common/params";
 
-const FONT_FAMILY = "Sans Serif, Segoe UI, Helvetica, Arial, sans-serif";
+const FONT_FAMILY = "Pixel";
 
-// ─── Helper: resolve button colors per style + state ─────────────────
+// ─── Helper: resolve MC button colors per state ──────────────────────
 
 function resolveButtonColors(
-  style: string,
   state: string,
   colors: ThemeColors
-): { fill: string; textColor: string; borderColor: string; borderWidth: number; opacity: number } {
-  const primary = colors.primary;
-  const surface = colors.surface;
-
-  let fill: string;
-  let textColor: string;
-  let borderColor: string;
-  let borderWidth: number;
+): { fill: string; textColor: string; borderColor: string; opacity: number } {
+  let fill = colors.surface;
+  let textColor = colors.text;
+  const borderColor = colors.border;
   let opacity = 1;
-
-  switch (style) {
-    case "secondary":
-      fill = surface;
-      textColor = colors.text;
-      borderColor = colors.border;
-      borderWidth = 2;
-      break;
-    case "outline":
-      fill = "transparent";
-      textColor = primary;
-      borderColor = primary;
-      borderWidth = 1.5;
-      break;
-    case "ghost":
-      fill = "transparent";
-      textColor = primary;
-      borderColor = "none";
-      borderWidth = 0;
-      break;
-    default: // primary
-      fill = primary;
-      textColor = colors.onPrimary;
-      borderColor = "none";
-      borderWidth = 0;
-      break;
-  }
 
   switch (state) {
     case "hover":
-      if (style === "outline" || style === "ghost") {
-        fill = withAlpha(primary, 0.1);
-      } else {
-        fill = lighten(fill, 0.15);
-      }
+      fill = lighten(fill, 0.25);
       break;
     case "pressed":
-      if (style === "outline" || style === "ghost") {
-        fill = withAlpha(primary, 0.2);
-      } else {
-        fill = darken(fill, 0.15);
-      }
+      fill = darken(fill, 0.15);
       break;
     case "disabled":
-      opacity = 0.35;
+      opacity = 0.4;
       break;
   }
 
-  return { fill, textColor, borderColor, borderWidth, opacity };
+  return { fill, textColor, borderColor, opacity };
 }
 
 // ─── Theme Definition ────────────────────────────────────────────────
 
-export const fluentDarkTheme: ThemeDef = {
-  id: "fluent-dark",
-  name: "Fluent UI 暗色",
+export const minecraftTheme: ThemeDef = {
+  id: "minecraft-theme",
+  name: "Minecraft 主题",
   colorDefs: [
-    { key: "primary", label: "主色调", defaultValue: "#115EA3" },
+    { key: "primary", label: "主色调", defaultValue: "#6D6D6D" },
     { key: "onPrimary", label: "主色文字", defaultValue: "#FFFFFF" },
-    { key: "secondary", label: "次要色", defaultValue: "#292929" },
-    { key: "background", label: "背景色", defaultValue: "#1F1F1F" },
-    { key: "surface", label: "表面色", defaultValue: "#2D2D2D" },
+    { key: "secondary", label: "次要色", defaultValue: "#6D6D6D" },
+    { key: "background", label: "背景色", defaultValue: "#6D6D6D" },
+    { key: "surface", label: "表面色", defaultValue: "#6D6D6D" },
     { key: "text", label: "文字色", defaultValue: "#FFFFFF" },
-    { key: "textSecondary", label: "次要文字", defaultValue: "#B0B0B0" },
-    { key: "label", label: "标签色", defaultValue: "#E0E0E0" },
-    { key: "border", label: "边框色", defaultValue: "#666666" },
+    { key: "textSecondary", label: "次要文字", defaultValue: "#FFFFFF" },
+    { key: "label", label: "标签色", defaultValue: "#FFFFFF" },
+    { key: "border", label: "边框色", defaultValue: "#000000" },
   ],
   defaultColors: {
-    primary: "#115EA3",
+    primary: "#6D6D6D",
     onPrimary: "#FFFFFF",
-    secondary: "#292929",
-    background: "#1F1F1F",
-    surface: "#2D2D2D",
+    secondary: "#6D6D6D",
+    background: "#6D6D6D",
+    surface: "#6D6D6D",
     text: "#FFFFFF",
-    textSecondary: "#B0B0B0",
-    label: "#E0E0E0",
-    border: "#666666",
+    textSecondary: "#FFFFFF",
+    label: "#FFFFFF",
+    border: "#000000",
   },
   components: {
     // ── Button ─────────────────────────────────────────────────────
@@ -122,7 +80,6 @@ export const fluentDarkTheme: ThemeDef = {
       iconSlots: ["icon"],
       params: [
         { ...labelParam, defaultValue: "按钮" },
-        buttonStyleParam(),
         { key: "stateDefault", label: "默认状态", type: "boolean", defaultValue: true, group: "状态", common: true },
         { key: "stateHover", label: "悬停状态", type: "boolean", defaultValue: true, group: "状态", common: true },
         { key: "statePressed", label: "按下状态", type: "boolean", defaultValue: true, group: "状态", common: true },
@@ -132,12 +89,10 @@ export const fluentDarkTheme: ThemeDef = {
         ...sizeParams,
         fontSizeParam,
         fontWeightParam,
-        borderRadiusParam(4),
-        borderWidthParam(0),
+        borderWidthParam(4),
         opacityParam,
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
-        const style = (params.style as string) || "primary";
         const userOpacity = params.opacity as number ?? 1;
         const allStates: [string, string][] = [
           ["default", "stateDefault"],
@@ -149,7 +104,7 @@ export const fluentDarkTheme: ThemeDef = {
         if (enabledStates.length === 0) enabledStates.push("default");
 
         return enabledStates.map((state) => {
-          const resolved = resolveButtonColors(style, state, colors);
+          const resolved = resolveButtonColors(state, colors);
           const svg = renderToSvg((draw) => {
             renderButton(draw, {
               fill: resolved.fill,
@@ -162,9 +117,9 @@ export const fluentDarkTheme: ThemeDef = {
               fontWeight: (params.fontWeight as string) ?? "bold",
               width: (params.width as number) ?? 0,
               height: (params.height as number) ?? 0,
-              borderWidth: resolved.borderWidth,
+              borderWidth: (params.borderWidth as number) ?? 4,
               borderColor: resolved.borderColor,
-              borderRadius: cornersOf((params.borderRadius as number) ?? 4),
+              borderRadius: cornersOf(0),
               opacity: resolved.opacity * userOpacity,
             });
           });
@@ -191,12 +146,12 @@ export const fluentDarkTheme: ThemeDef = {
           key: "size",
           label: "选框大小",
           type: "number",
-          defaultValue: 20,
+          defaultValue: 24,
           group: "尺寸",
           constraints: { min: 12, max: 60, step: 1 },
         },
         fontSizeParam,
-        borderRadiusParam(4),
+        borderWidthParam(4),
         opacityParam,
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
@@ -209,11 +164,11 @@ export const fluentDarkTheme: ThemeDef = {
             fontFamily: FONT_FAMILY,
             checked,
             uncheckedFill: colors.surface,
-            size: (params.size as number) ?? 20,
+            size: (params.size as number) ?? 24,
             label: (params.label as string) ?? "复选框",
             labelFontSize: (params.fontSize as number) ?? 14,
             labelColor: colors.label,
-            borderRadius: (params.borderRadius as number) ?? 4,
+            borderRadius: 0,
             opacity: (params.opacity as number) ?? 1,
           });
         });
@@ -258,12 +213,10 @@ export const fluentDarkTheme: ThemeDef = {
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
         const isOn = (params.on as boolean) ?? false;
-        const trackOnColor = colors.primary;
-        const trackOffColor = colors.border;
 
         const svg = renderToSvg((draw) => {
           renderToggle(draw, {
-            trackColor: isOn ? trackOnColor : trackOffColor,
+            trackColor: isOn ? colors.primary : colors.border,
             knobColor: colors.background,
             fontFamily: FONT_FAMILY,
             on: isOn,
@@ -316,7 +269,7 @@ export const fluentDarkTheme: ThemeDef = {
           key: "trackHeight",
           label: "轨道高度",
           type: "number",
-          defaultValue: 6,
+          defaultValue: 8,
           group: "尺寸",
           constraints: { min: 2, max: 20, step: 1 },
         },
@@ -324,7 +277,7 @@ export const fluentDarkTheme: ThemeDef = {
           key: "knobSize",
           label: "旋钮大小",
           type: "number",
-          defaultValue: 20,
+          defaultValue: 24,
           group: "尺寸",
           constraints: { min: 8, max: 60, step: 1 },
         },
@@ -334,8 +287,8 @@ export const fluentDarkTheme: ThemeDef = {
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
         const generateSteps = (params.generateProgressSteps as boolean) ?? false;
         const trackWidth = (params.trackWidth as number) ?? 200;
-        const trackHeight = (params.trackHeight as number) ?? 6;
-        const knobSize = (params.knobSize as number) ?? 20;
+        const trackHeight = (params.trackHeight as number) ?? 8;
+        const knobSize = (params.knobSize as number) ?? 24;
         const label = (params.label as string) ?? "";
         const labelFontSize = (params.fontSize as number) ?? 14;
         const opacity = (params.opacity as number) ?? 1;
@@ -349,13 +302,13 @@ export const fluentDarkTheme: ThemeDef = {
           label,
           labelFontSize,
           labelColor: colors.label,
+          borderRadius: 0,
           opacity,
         };
 
         const costumes: CostumeOutput[] = [];
 
         if (generateSteps) {
-          // Step size = knobSize so the knob visually covers the gap between steps
           const step = Math.max(1, knobSize);
           const count = Math.ceil(trackWidth / step);
           for (let i = 0; i <= count; i++) {
@@ -373,7 +326,6 @@ export const fluentDarkTheme: ThemeDef = {
           });
         }
 
-        // Always generate one knob
         costumes.push({
           name: "滑块旋钮",
           svg: renderToSvg((draw) =>
@@ -381,6 +333,7 @@ export const fluentDarkTheme: ThemeDef = {
               knobColor: colors.background,
               strokeColor: colors.primary,
               knobSize,
+              strokeWidth: 4,
               opacity,
             })
           ),

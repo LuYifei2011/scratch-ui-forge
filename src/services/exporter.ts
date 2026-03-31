@@ -1,49 +1,22 @@
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import { md5 } from "js-md5";
-import { renderComponent, renderAllFrames } from "@/core/SvgRenderer";
-import { ComponentRegistry } from "@/core/ComponentRegistry";
-import type { ProjectNode } from "@/core/types";
-
-function svgBlob(svgStr: string): Blob {
-  return new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
-}
+import { ThemeRegistry } from "@/core/ThemeRegistry";
+import type { CostumeOutput, ProjectNode, ThemeColors } from "@/core/types";
 
 /**
- * Download a single SVG file.
+ * Download costumes as separate SVG files packed in a ZIP.
  */
-export function exportSvg(
-  componentId: string,
-  params: Record<string, unknown>,
-  themeId: string,
-  variantName: string,
-  fileName?: string
-): void {
-  const svg = renderComponent(componentId, params, themeId, variantName);
-  const name = fileName ?? `${componentId}-${variantName}.svg`;
-  saveAs(svgBlob(svg), name);
-}
-
-/**
- * Download all variants (and parts) as separate SVG files packed in a ZIP.
- */
-export async function exportAllVariantsZip(
-  componentId: string,
-  params: Record<string, unknown>,
-  themeId: string,
-  selectedVariants?: string[],
-  zipName?: string
+export async function exportCostumesZip(
+  costumes: CostumeOutput[],
+  zipName = "costumes.zip"
 ): Promise<void> {
-  const results = renderAllFrames(componentId, params, themeId, selectedVariants);
   const zip = new JSZip();
-  for (const frame of results) {
-    const name = frame.partId
-      ? `${componentId}-${frame.variantName}-${frame.partId}.svg`
-      : `${componentId}-${frame.variantName}.svg`;
-    zip.file(name, frame.svg);
+  for (const costume of costumes) {
+    zip.file(`${costume.name}.svg`, costume.svg);
   }
   const blob = await zip.generateAsync({ type: "blob" });
-  saveAs(blob, zipName ?? `${componentId}-variants.zip`);
+  saveAs(blob, zipName);
 }
 
 /**
@@ -52,22 +25,24 @@ export async function exportAllVariantsZip(
 export async function exportBatchZip(
   nodes: ProjectNode[],
   globalThemeId = "fluent-light",
+  themeColors?: Partial<ThemeColors>,
   zipName = "scratch-ui-forge-export.zip"
 ): Promise<void> {
   const zip = new JSZip();
 
   for (const node of nodes) {
     if (node.type !== "component" || !node.componentType) continue;
-    const def = ComponentRegistry.get(node.componentType);
-    if (!def) continue;
 
-    const params = node.paramValues ?? {};
-    const results = renderAllFrames(node.componentType, params, globalThemeId, node.selectedVariants);
+    const costumes = ThemeRegistry.generateCostumes(
+      globalThemeId,
+      node.componentType,
+      node.paramValues ?? {},
+      themeColors
+    );
 
     const folder = zip.folder(node.name) ?? zip;
-    for (const frame of results) {
-      const name = frame.partId ? `${frame.variantName}-${frame.partId}.svg` : `${frame.variantName}.svg`;
-      folder.file(name, frame.svg);
+    for (const costume of costumes) {
+      folder.file(`${costume.name}.svg`, costume.svg);
     }
   }
 
@@ -76,30 +51,21 @@ export async function exportBatchZip(
 }
 
 /**
- * Export as .sprite3 (Scratch 3 sprite format) — placeholder.
- * A .sprite3 is a ZIP file containing:
- * - sprite.json (manifest with costumes array)
- * - SVG files for each costume
+ * Export as .sprite3 (Scratch 3 sprite format).
  */
 export async function exportSprite3(
-  componentId: string,
-  params: Record<string, unknown>,
-  themeId: string,
-  selectedVariants?: string[],
-  spriteName?: string
+  costumes: CostumeOutput[],
+  spriteName = "sprite"
 ): Promise<void> {
-  const results = renderAllFrames(componentId, params, themeId, selectedVariants);
-  const name = spriteName ?? componentId;
   const zip = new JSZip();
 
-  const costumes = results.map((frame) => {
-    const costumeName = frame.partId ? `${frame.variantName}-${frame.partId}` : frame.variantName;
-    const svgBytes = new TextEncoder().encode(frame.svg);
+  const costumeEntries = costumes.map((costume) => {
+    const svgBytes = new TextEncoder().encode(costume.svg);
     const hash = md5(svgBytes);
     const fileName = `${hash}.svg`;
-    zip.file(fileName, frame.svg);
+    zip.file(fileName, costume.svg);
     return {
-      name: costumeName,
+      name: costume.name,
       bitmapResolution: 1,
       dataFormat: "svg",
       assetId: hash,
@@ -111,14 +77,14 @@ export async function exportSprite3(
 
   const manifest = {
     isStage: false,
-    name,
+    name: spriteName,
     variables: {},
     lists: {},
     broadcasts: {},
     blocks: {},
     comments: {},
     currentCostume: 0,
-    costumes,
+    costumes: costumeEntries,
     sounds: [],
     volume: 100,
     visible: true,
@@ -133,5 +99,5 @@ export async function exportSprite3(
   zip.file("sprite.json", JSON.stringify(manifest, null, 2));
 
   const blob = await zip.generateAsync({ type: "blob" });
-  saveAs(blob, `${name}.sprite3`);
+  saveAs(blob, `${spriteName}.sprite3`);
 }

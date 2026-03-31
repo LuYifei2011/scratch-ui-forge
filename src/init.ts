@@ -1,13 +1,14 @@
-import { registerAllComponents } from "@/definitions/components";
-import { registerAllThemes } from "@/definitions/themes";
+import { ThemeRegistry } from "@/core/ThemeRegistry";
+import { builtinThemes } from "@/definitions/themes";
 import { registerBuiltinIcons } from "@/definitions/icons/builtin";
 
 let initialized = false;
 
 export function initializeApp(): void {
   if (initialized) return;
-  registerAllThemes();
+  for (const theme of builtinThemes) {
+    ThemeRegistry.register(theme);
+  }
   registerBuiltinIcons();
-  registerAllComponents();
   initialized = true;
 }

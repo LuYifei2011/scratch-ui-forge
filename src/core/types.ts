@@ -44,7 +44,7 @@ export function normalizeCorners<T>(input: T | Corners<T>): Corners<T> {
   return cornersOf(input as T);
 }
 
-// ─── Component Parameter Declaration ─────────────────────────────────
+// ─── Theme Parameter Declaration ─────────────────────────────────────
 
 export type ParamType = "number" | "string" | "color" | "boolean" | "select" | "slider" | "icon";
 
@@ -55,7 +55,11 @@ export interface ParamConstraints {
   options?: { label: string; value: string }[];
 }
 
-export interface ComponentParam {
+/**
+ * A parameter declared by a theme for a component.
+ * Replaces the old `ComponentParam` + `VariantDef` — everything is a flat param.
+ */
+export interface ThemeParam {
   key: string;
   label: string;
   type: ParamType;
@@ -63,128 +67,80 @@ export interface ComponentParam {
   group?: string;
   constraints?: ParamConstraints;
   description?: string;
-  /** If true, this param is driven by variants and hidden from the UI */
-  variantDriven?: boolean;
   /** Show at top level (not in collapsed accordion) */
   common?: boolean;
-  /** Theme variable key to resolve default value from (for color/number params) */
-  themeVariable?: string;
 }
 
-// ─── Variants ─────────────────────────────────────────────────────────
+// ─── Theme Color Declaration ─────────────────────────────────────────
 
-export interface VariantDef {
-  name: string;
+/** Declares one user-editable color slot in a theme. */
+export interface ThemeColorDef {
+  key: string;
   label: string;
-  /** Parameter overrides for this variant */
-  paramOverrides?: Record<string, unknown>;
+  defaultValue: string;
 }
 
-// ─── Render Context ───────────────────────────────────────────────────
+/** Runtime color values keyed by slot key. */
+export type ThemeColors = Record<string, string>;
 
-export interface RenderUtils {
-  text: typeof import("@/core/utils/text");
-  shapes: typeof import("@/core/utils/shapes");
-  icons: typeof import("@/core/utils/icons");
-  colors: typeof import("@/core/utils/colors");
-}
+// ─── Costume Output ──────────────────────────────────────────────────
 
-export interface RenderContext {
-  draw: Container;
-  params: Record<string, unknown>;
-  theme: ResolvedTheme;
-  utils: RenderUtils;
-  width: number;
-  height: number;
-}
-
-// ─── Component Part (for multi-part components like slider) ──────────
-
-export interface ComponentPart {
-  id: string;
+/** A single rendered costume (SVG image with a name). */
+export interface CostumeOutput {
+  /** Name used in UI display and file export */
   name: string;
-  render: (ctx: RenderContext) => void;
+  /** Rendered SVG string */
+  svg: string;
 }
 
-// ─── Component Definition ─────────────────────────────────────────────
+// ─── Theme Component Definition ──────────────────────────────────────
 
-export interface ScratchComponentDef {
-  id: string;
+/**
+ * Defines how a theme provides a specific component.
+ * The theme owns parameters, rendering logic, and costume generation.
+ */
+export interface ThemeComponentDef {
+  /** Display name (e.g., "按钮") */
   name: string;
-  category: string;
-  params: ComponentParam[];
-  variants: VariantDef[];
+  /** Category for grouping (e.g., "基础") */
+  category?: string;
+  /** Icon slot param keys (for icon picker UI) */
   iconSlots?: string[];
-  render: (ctx: RenderContext) => void;
-  /** Multi-part components (each part exports as separate SVG) */
-  parts?: ComponentPart[];
+  /** All user-editable parameters for this component in this theme */
+  params: ThemeParam[];
+  /**
+   * Generate all costumes for this component.
+   * Receives the resolved theme colors and user-edited parameters.
+   * Returns an array of named SVG costumes.
+   */
+  generateCostumes: (colors: ThemeColors, params: Record<string, unknown>) => CostumeOutput[];
 }
 
-// ─── Theme ────────────────────────────────────────────────────────────
-
-/**
- * Theme input variables — only base design tokens.
- * Border properties accept shorthand (single value) or per-side / per-corner objects.
- * The ThemeEngine normalizer expands shorthand into the full form.
- */
-export interface ThemeVariables {
-  primaryColor: string;
-  onPrimaryColor: string;
-  secondaryColor: string;
-  backgroundColor: string;
-  surfaceColor: string;
-  textColor: string;
-  textColorSecondary: string;
-  labelColor: string;
-  borderColor: string | Sides<string>;
-  borderWidth: number | Sides<number>;
-  borderRadius: number | Corners<number>;
-  disabledOpacity: number;
-  fontSize: number;
-  fontFamily: string;
-  [key: string]: unknown;
-}
+// ─── Theme Definition ────────────────────────────────────────────────
 
 /**
- * Normalized theme variables — always expanded.
- * This is what components receive via `RenderContext.theme.variables`.
+ * Top-level theme definition. Themes are the central orchestrators:
+ * they declare colors, list supported components, define parameters, and
+ * connect everything to component render functions.
  */
-export interface NormalizedThemeVariables {
-  primaryColor: string;
-  onPrimaryColor: string;
-  secondaryColor: string;
-  backgroundColor: string;
-  surfaceColor: string;
-  textColor: string;
-  textColorSecondary: string;
-  labelColor: string;
-  borderColor: Sides<string>;
-  borderWidth: Sides<number>;
-  borderRadius: Corners<number>;
-  disabledOpacity: number;
-  fontSize: number;
-  fontFamily: string;
-  [key: string]: unknown;
-}
-
-export interface ThemeComponentOverride {
-  render?: (ctx: RenderContext) => void;
-  variables?: Partial<ThemeVariables>;
-}
-
-export interface Theme {
+export interface ThemeDef {
   id: string;
   name: string;
-  variables: ThemeVariables;
-  componentOverrides?: Record<string, ThemeComponentOverride>;
+  /** Color slots that users can customize in the UI */
+  colorDefs: ThemeColorDef[];
+  /** Default color values for all slots */
+  defaultColors: ThemeColors;
+  /** Components supported by this theme (keyed by component key, e.g., "button") */
+  components: Record<string, ThemeComponentDef>;
 }
 
-export interface ResolvedTheme {
-  id: string;
-  name: string;
-  variables: NormalizedThemeVariables;
-  renderOverride?: (ctx: RenderContext) => void;
-}
+// ─── Render Helper ───────────────────────────────────────────────────
+
+/**
+ * Callback that draws SVG content into a container.
+ * Used by `renderToSvg()` to wrap drawing logic.
+ */
+export type DrawFn = (draw: Container) => void;
 
 // ─── Project Tree ─────────────────────────────────────────────────────
 
@@ -194,11 +150,10 @@ export interface ProjectNode {
   type: "folder" | "component";
   parentId: string | null;
   order: number;
-  /** Only for type === 'component' */
+  /** Component key within the current theme (e.g., "button") */
   componentType?: string;
+  /** User-edited parameter values */
   paramValues?: Record<string, unknown>;
-  themeId?: string;
-  selectedVariants?: string[];
 }
 
 // ─── Export ───────────────────────────────────────────────────────────
@@ -206,5 +161,4 @@ export interface ProjectNode {
 export interface ExportOptions {
   format: "svg" | "sprite3" | "zip";
   nodeIds: string[];
-  includeVariants?: boolean;
 }

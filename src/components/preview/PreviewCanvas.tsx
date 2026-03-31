@@ -2,8 +2,8 @@ import { Box, Text, Flex, IconButton, HStack } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { FiSun, FiMoon, FiZoomIn, FiZoomOut, FiLayout } from "react-icons/fi";
-import { renderComponent, renderSvgToCanvas } from "@/core/SvgRenderer";
-import { ComponentRegistry } from "@/core/ComponentRegistry";
+import { renderSvgToCanvas } from "@/core/SvgRenderer";
+import { ThemeRegistry } from "@/core/ThemeRegistry";
 import { useProjectStore } from "@/store/projectStore";
 import { useEditorStore } from "@/store/editorStore";
 import FrameStrip from "./FrameStrip";
@@ -12,17 +12,16 @@ import stageUrl from "@/assets/stage.svg?url";
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 8;
 const clampZoom = (v: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v));
-// stage.svg natural size in px
 const STAGE_W = 479.43;
 const STAGE_H = 398.43;
 
 export default function PreviewCanvas() {
   const selectedNodeId = useEditorStore((s) => s.selectedNodeId);
   const refreshCounter = useEditorStore((s) => s.refreshCounter);
-  const activeVariant = useEditorStore((s) => s.activeVariant);
-  const activePart = useEditorStore((s) => s.activePart);
+  const activeCostumeIndex = useEditorStore((s) => s.activeCostumeIndex);
   const node = useProjectStore((s) => s.nodes.find((n) => n.id === selectedNodeId));
   const globalThemeId = useProjectStore((s) => s.globalThemeId);
+  const themeColors = useProjectStore((s) => s.themeColors);
 
   const outerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,7 +29,6 @@ export default function PreviewCanvas() {
   const setPreviewLight = useEditorStore((s) => s.setPreviewLight);
   const [zoom, setZoom] = useState(1);
   const [showStage, setShowStage] = useState(false);
-  // offset is bound to a nodeId — when the node changes the canvas auto-centers
   const [pan, setPan] = useState<{ nodeId: string | undefined; x: number; y: number }>({
     nodeId: selectedNodeId ?? undefined,
     x: 0,
@@ -47,10 +45,6 @@ export default function PreviewCanvas() {
     ? "repeating-conic-gradient(#e2e8f0 0% 25%, #ffffff 0% 50%) 50% / 20px 20px"
     : "repeating-conic-gradient(#2D3748 0% 25%, #1A202C 0% 50%) 50% / 20px 20px";
 
-  // Scroll-wheel zoom.
-  // Deps include selectedNodeId so the effect re-runs when the outer div first
-  // mounts (the initial render may show the "no selection" branch where
-  // outerRef.current is null, so [] would miss the mount of the real div).
   useEffect(() => {
     const el = outerRef.current;
     if (!el) return;
@@ -63,7 +57,6 @@ export default function PreviewCanvas() {
     return () => el.removeEventListener("wheel", onWheel);
   }, [selectedNodeId]);
 
-  // Drag-to-pan
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.button !== 0) return;
@@ -90,7 +83,7 @@ export default function PreviewCanvas() {
     };
   }, [isDragging, selectedNodeId]);
 
-  // Render SVG to canvas
+  // Generate costumes and render the active one
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !node || node.type !== "component" || !node.componentType) {
@@ -101,24 +94,23 @@ export default function PreviewCanvas() {
       return;
     }
 
-    const def = ComponentRegistry.get(node.componentType);
-    if (!def) return;
-
-    const variants = node.selectedVariants ?? def.variants.map((v) => v.name);
-    const variant =
-      activeVariant && variants.includes(activeVariant) ? activeVariant : (variants[0] ?? def.variants[0]?.name);
-
-    const partId = def.parts && activePart ? activePart : undefined;
-
     try {
-      const svgString = renderComponent(node.componentType, node.paramValues ?? {}, globalThemeId, variant, partId);
+      const costumes = ThemeRegistry.generateCostumes(
+        globalThemeId,
+        node.componentType,
+        node.paramValues ?? {},
+        themeColors
+      );
+      if (costumes.length === 0) return;
+      const idx = Math.min(activeCostumeIndex, costumes.length - 1);
+      const svgString = costumes[idx].svg;
       renderSvgToCanvas(svgString, canvas, 0, 0, zoom).catch((err) => {
         console.error("Canvas render error:", err);
       });
     } catch (err) {
       console.error("Render error:", err);
     }
-  }, [node, refreshCounter, activeVariant, activePart, globalThemeId, zoom]);
+  }, [node, refreshCounter, activeCostumeIndex, globalThemeId, themeColors, zoom]);
 
   if (!node || node.type !== "component") {
     return (

@@ -2,7 +2,7 @@ import { VStack, Input, Textarea, Button, Dialog, Portal, Field, Text, Separator
 import { useState } from "react";
 import { useProjectStore } from "@/store/projectStore";
 import { useEditorStore } from "@/store/editorStore";
-import { ThemeEngine } from "@/core/ThemeEngine";
+import { ThemeRegistry } from "@/core/ThemeRegistry";
 import SimpleSelect from "@/components/ui/simple-select";
 
 const DEFAULT_THEME_ID = "fluent-light";
@@ -32,7 +32,7 @@ function ProjectSettingsForm({
   onSave,
   onDelete,
 }: ProjectSettingsFormProps) {
-  const themes = ThemeEngine.list();
+  const themes = ThemeRegistry.list();
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
   const [themeId, setThemeId] = useState(initialThemeId);

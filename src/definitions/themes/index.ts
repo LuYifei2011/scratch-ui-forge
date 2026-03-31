@@ -1,10 +1,15 @@
-import { ThemeEngine } from "@/core/ThemeEngine";
+export { fluentDarkTheme } from "./fluent_dark";
+export { fluentLightTheme } from "./fluent_light";
+export { minecraftTheme } from "./minecraft";
+
+import type { ThemeDef } from "@/core/types";
 import { fluentDarkTheme } from "./fluent_dark";
 import { fluentLightTheme } from "./fluent_light";
-import { gameTheme } from "./game";
+import { minecraftTheme } from "./minecraft";
 
-export function registerAllThemes(): void {
-  ThemeEngine.register(fluentDarkTheme);
-  ThemeEngine.register(fluentLightTheme);
-  ThemeEngine.register(gameTheme);
-}
+/** All built-in themes */
+export const builtinThemes: ThemeDef[] = [
+  fluentDarkTheme,
+  fluentLightTheme,
+  minecraftTheme,
+];

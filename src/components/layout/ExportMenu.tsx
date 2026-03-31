@@ -2,8 +2,8 @@ import { Menu, IconButton, Portal } from "@chakra-ui/react";
 import { FiDownload, FiPackage, FiBox, FiFileText } from "react-icons/fi";
 import { useProjectStore } from "@/store/projectStore";
 import { useEditorStore } from "@/store/editorStore";
-import { exportAllVariantsZip, exportBatchZip, exportSprite3 } from "@/services/exporter";
-import { renderComponent } from "@/core/SvgRenderer";
+import { exportCostumesZip, exportBatchZip, exportSprite3 } from "@/services/exporter";
+import { ThemeRegistry } from "@/core/ThemeRegistry";
 import { saveAs } from "file-saver";
 import { saveProjectToFile } from "@/services/persistence";
 import { Tooltip } from "../ui/tooltip";
@@ -14,6 +14,7 @@ export default function ExportMenu() {
   const selectedNodeId = useEditorStore((s) => s.selectedNodeId);
   const nodes = useProjectStore((s) => s.nodes);
   const globalThemeId = useProjectStore((s) => s.globalThemeId);
+  const themeColors = useProjectStore((s) => s.themeColors);
   const activeProjectName = useProjectStore((s) => s.activeProjectName);
   const activeProjectDescription = useProjectStore((s) => s.activeProjectDescription);
 
@@ -22,35 +23,43 @@ export default function ExportMenu() {
 
   const handleExportSvg = () => {
     if (!isValidComponentNode) return;
-    const params = node.paramValues ?? {};
-    const variants = node.selectedVariants;
-    const variantName = variants?.[0] ?? "default";
-    const svg = renderComponent(node.componentType!, params, globalThemeId, variantName);
+    const costumes = ThemeRegistry.generateCostumes(
+      globalThemeId,
+      node.componentType!,
+      node.paramValues ?? {},
+      themeColors
+    );
+    if (costumes.length === 0) return;
+    const svg = costumes[0].svg;
     const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-    saveAs(blob, `${node.name}-${variantName}.svg`);
+    saveAs(blob, `${node.name}-${costumes[0].name}.svg`);
   };
 
   const handleExportZip = async () => {
     if (!isValidComponentNode) return;
-    const params = node.paramValues ?? {};
-    await exportAllVariantsZip(
-      node.componentType!,
-      params,
+    const costumes = ThemeRegistry.generateCostumes(
       globalThemeId,
-      node.selectedVariants,
-      `${node.name}-variants.zip`
+      node.componentType!,
+      node.paramValues ?? {},
+      themeColors
     );
+    await exportCostumesZip(costumes, `${node.name}-造型.zip`);
   };
 
   const handleExportSprite3 = async () => {
     if (!isValidComponentNode) return;
-    const params = node.paramValues ?? {};
-    await exportSprite3(node.componentType!, params, globalThemeId, node.selectedVariants, node.name);
+    const costumes = ThemeRegistry.generateCostumes(
+      globalThemeId,
+      node.componentType!,
+      node.paramValues ?? {},
+      themeColors
+    );
+    await exportSprite3(costumes, node.name);
   };
 
   const handleExportAll = async () => {
     const componentNodes = nodes.filter((n) => n.type === "component");
-    await exportBatchZip(componentNodes, globalThemeId);
+    await exportBatchZip(componentNodes, globalThemeId, themeColors);
   };
 
   const handleSaveFile = async () => {
@@ -105,7 +114,7 @@ export default function ExportMenu() {
                   alignItems="center"
                   gap={2}
                 >
-                  <FiPackage /> 导出所有变体 (ZIP)
+                  <FiPackage /> 导出所有造型 (ZIP)
                 </Menu.Item>
                 <Menu.Item
                   value="export-sprite"

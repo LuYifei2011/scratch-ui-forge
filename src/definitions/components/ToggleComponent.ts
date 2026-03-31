@@ -1,182 +1,117 @@
-import type { ScratchComponentDef, RenderContext, ResolvedTheme } from "@/core/types";
-import { measureText } from "@/core/utils/text";
+import type { Container } from "@svgdotjs/svg.js";
+import { drawCapsule, drawCircle } from "@/core/utils/shapes";
+import { drawText } from "@/core/utils/text";
+
+// ─── Options ─────────────────────────────────────────────────────────
+
+export interface ToggleBaseOptions {
+  /** Track color (resolved for on/off state by the caller) */
+  trackColor: string;
+  /** Knob fill color */
+  knobColor: string;
+  /** Font family */
+  fontFamily: string;
+}
+
+export interface ToggleStyleOptions {
+  /** Whether the toggle is in "on" state. Default: false */
+  on?: boolean;
+  /**
+   * Animation progress 0–1. Default: derived from `on` (0 or 1).
+   * Allows rendering intermediate positions for animation frames.
+   */
+  progress?: number;
+  /** Easing function string (informational, for export metadata). */
+  easing?: string;
+  /** Track width. Default: 44 */
+  trackWidth?: number;
+  /** Track height. Default: 22 */
+  trackHeight?: number;
+  /** Text label to the right of the toggle. Default: "" */
+  label?: string;
+  /** Label font size. Default: 14 */
+  labelFontSize?: number;
+  /** Label text color. Default: "#242424" */
+  labelColor?: string;
+  /** Opacity. Default: 1 */
+  opacity?: number;
+  /** Extra SVG attributes */
+  extraAttrs?: Record<string, string>;
+}
+
+export type ToggleOptions = ToggleBaseOptions & ToggleStyleOptions;
+
+// ─── Defaults ────────────────────────────────────────────────────────
+
+const DEFAULTS = {
+  on: false,
+  trackWidth: 44,
+  trackHeight: 22,
+  label: "",
+  labelFontSize: 14,
+  labelColor: "#242424",
+  opacity: 1,
+};
 
 const LABEL_GAP = 8;
 
-function computeToggleSize(params: Record<string, unknown>, theme: ResolvedTheme) {
-  const trackWidth = (params.trackWidth as number) || 44;
-  const trackHeight = (params.trackHeight as number) || 22;
-  const label = (params.label as string) || "";
-  const labelFontSize = (params.labelFontSize as number) || theme.variables.fontSize;
-  const fontFamily = theme.variables.fontFamily;
+// ─── Render ──────────────────────────────────────────────────────────
 
-  if (!label) {
-    return { width: trackWidth, height: trackHeight };
+export function renderToggle(draw: Container, opts: ToggleOptions): void {
+  const o = { ...DEFAULTS, ...opts };
+
+  const totalHeight = o.label
+    ? Math.ceil(Math.max(o.trackHeight, o.labelFontSize * 1.4))
+    : o.trackHeight;
+
+  // Animation progress: 0 = off position, 1 = on position
+  const progress = o.progress ?? (o.on ? 1 : 0);
+
+  const trackY = (totalHeight - o.trackHeight) / 2;
+  const knobRadius = (o.trackHeight - 4) / 2;
+  const knobMinX = knobRadius + 3;
+  const knobMaxX = o.trackWidth - knobRadius - 3;
+  const knobCx = knobMinX + (knobMaxX - knobMinX) * progress;
+  const knobCy = totalHeight / 2;
+
+  // Track
+  drawCapsule(draw, {
+    x: 0,
+    y: trackY,
+    width: o.trackWidth,
+    height: o.trackHeight,
+    fill: o.trackColor,
+  });
+
+  // Knob
+  drawCircle(draw, {
+    cx: knobCx,
+    cy: knobCy,
+    radius: knobRadius,
+    fill: o.knobColor,
+  });
+
+  // Label
+  if (o.label) {
+    drawText(draw, {
+      text: o.label,
+      x: o.trackWidth + LABEL_GAP,
+      y: totalHeight / 2,
+      fontSize: o.labelFontSize,
+      fontFamily: o.fontFamily,
+      fill: o.labelColor,
+      anchor: "start",
+      verticalAlign: "middle",
+    });
   }
 
-  const labelWidth = measureText(label, labelFontSize, fontFamily, "normal");
-  return {
-    width: Math.ceil(trackWidth + LABEL_GAP + labelWidth),
-    height: Math.ceil(Math.max(trackHeight, labelFontSize * 1.4)),
-  };
+  if (o.opacity < 1) {
+    draw.opacity(o.opacity);
+  }
+
+  if (o.extraAttrs) {
+    for (const [k, v] of Object.entries(o.extraAttrs)) {
+      draw.attr(k, v);
+    }
+  }
 }
-
-const toggleDef: ScratchComponentDef = {
-  id: "toggle",
-  name: "开关",
-  category: "基础",
-  params: [
-    {
-      key: "width",
-      label: "宽度",
-      type: "number",
-      defaultValue: 0,
-      group: "尺寸",
-      constraints: { min: 0, max: 400, step: 1 },
-      description: "0 = 自动",
-    },
-    {
-      key: "height",
-      label: "高度",
-      type: "number",
-      defaultValue: 0,
-      group: "尺寸",
-      constraints: { min: 0, max: 200, step: 1 },
-      description: "0 = 自动",
-    },
-    {
-      key: "label",
-      label: "标签",
-      type: "string",
-      defaultValue: "",
-      group: "内容",
-      common: true,
-    },
-    {
-      key: "on",
-      label: "开启",
-      type: "boolean",
-      defaultValue: false,
-      group: "状态",
-      variantDriven: true,
-    },
-    {
-      key: "trackWidth",
-      label: "轨道宽度",
-      type: "number",
-      defaultValue: 44,
-      group: "尺寸",
-      constraints: { min: 24, max: 120, step: 1 },
-    },
-    {
-      key: "trackHeight",
-      label: "轨道高度",
-      type: "number",
-      defaultValue: 22,
-      group: "尺寸",
-      constraints: { min: 14, max: 60, step: 1 },
-    },
-    {
-      key: "labelFontSize",
-      label: "标签字号",
-      type: "number",
-      defaultValue: 14,
-      group: "文字",
-      constraints: { min: 8, max: 36, step: 1 },
-    },
-    {
-      key: "trackOnColor",
-      label: "开启轨道颜色",
-      type: "color",
-      defaultValue: "",
-      group: "颜色",
-      themeVariable: "primaryColor",
-    },
-    {
-      key: "trackOffColor",
-      label: "关闭轨道颜色",
-      type: "color",
-      defaultValue: "",
-      group: "颜色",
-      themeVariable: "borderColor",
-    },
-    {
-      key: "knobColor",
-      label: "旋钮颜色",
-      type: "color",
-      defaultValue: "",
-      group: "颜色",
-      themeVariable: "backgroundColor",
-    },
-    {
-      key: "opacity",
-      label: "不透明度",
-      type: "slider",
-      defaultValue: 1,
-      group: "外观",
-      constraints: { min: 0, max: 1, step: 0.05 },
-    },
-  ],
-  variants: [
-    { name: "off", label: "关闭", paramOverrides: { on: false } },
-    { name: "on", label: "开启", paramOverrides: { on: true } },
-  ],
-  render(ctx: RenderContext) {
-    const { draw, params, theme, utils } = ctx;
-    const { height } = computeToggleSize(params, theme);
-    const isOn = params.on as boolean;
-    const opacity = params.opacity as number;
-    const trackWidth = params.trackWidth as number;
-    const trackHeight = params.trackHeight as number;
-    const label = (params.label as string) || "";
-    const labelFontSize = (params.labelFontSize as number) || theme.variables.fontSize;
-    const trackOnColor = (params.trackOnColor as string) || theme.variables.primaryColor;
-    const trackOffColor = (params.trackOffColor as string) || theme.variables.borderColor.top;
-    const knobColor = (params.knobColor as string) || theme.variables.backgroundColor;
-    const labelColor = theme.variables.labelColor;
-    const fontFamily = theme.variables.fontFamily;
-
-    const trackColor = isOn ? trackOnColor : trackOffColor;
-    const trackY = (height - trackHeight) / 2;
-    const knobRadius = (trackHeight - 4) / 2;
-    const knobCx = isOn ? trackWidth - knobRadius - 3 : knobRadius + 3;
-    const knobCy = height / 2;
-
-    // Track
-    utils.shapes.drawCapsule(draw, {
-      x: 0,
-      y: trackY,
-      width: trackWidth,
-      height: trackHeight,
-      fill: trackColor,
-    });
-
-    // Knob
-    utils.shapes.drawCircle(draw, {
-      cx: knobCx,
-      cy: knobCy,
-      radius: knobRadius,
-      fill: knobColor,
-    });
-
-    // Label
-    if (label) {
-      utils.text.drawText(draw, {
-        text: label,
-        x: trackWidth + LABEL_GAP,
-        y: height / 2,
-        fontSize: labelFontSize,
-        fontFamily,
-        fill: labelColor,
-        anchor: "start",
-        verticalAlign: "middle",
-      });
-    }
-
-    if (opacity < 1) {
-      draw.opacity(opacity);
-    }
-  },
-};
-
-export default toggleDef;

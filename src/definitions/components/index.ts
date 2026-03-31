@@ -1,12 +1,18 @@
-import { ComponentRegistry } from "@/core/ComponentRegistry";
-import buttonDef from "./ButtonComponent";
-import checkboxDef from "./CheckboxComponent";
-import toggleDef from "./ToggleComponent";
-import sliderDef from "./SliderComponent";
+export { renderButton } from "./ButtonComponent";
+export type { ButtonOptions, ButtonBaseOptions, ButtonStyleOptions } from "./ButtonComponent";
 
-export function registerAllComponents(): void {
-  ComponentRegistry.register(buttonDef);
-  ComponentRegistry.register(checkboxDef);
-  ComponentRegistry.register(toggleDef);
-  ComponentRegistry.register(sliderDef);
-}
+export { renderCheckbox } from "./CheckboxComponent";
+export type { CheckboxOptions, CheckboxBaseOptions, CheckboxStyleOptions } from "./CheckboxComponent";
+
+export { renderToggle } from "./ToggleComponent";
+export type { ToggleOptions, ToggleBaseOptions, ToggleStyleOptions } from "./ToggleComponent";
+
+export { renderSliderTrack, renderSliderKnob } from "./SliderComponent";
+export type {
+  SliderTrackOptions,
+  SliderTrackBaseOptions,
+  SliderTrackStyleOptions,
+  SliderKnobOptions,
+  SliderKnobBaseOptions,
+  SliderKnobStyleOptions,
+} from "./SliderComponent";

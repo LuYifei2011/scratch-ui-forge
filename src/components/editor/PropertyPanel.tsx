@@ -1,27 +1,16 @@
 import { Box, VStack, HStack, Text, Input, NumberInput, Slider, Switch, Accordion } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import SimpleSelect from "@/components/ui/simple-select";
-import { ComponentRegistry } from "@/core/ComponentRegistry";
-import { ThemeEngine } from "@/core/ThemeEngine";
+import { ThemeRegistry } from "@/core/ThemeRegistry";
 import { useProjectStore } from "@/store/projectStore";
 import { useEditorStore } from "@/store/editorStore";
-import type { ComponentParam, ResolvedTheme, Sides, Corners } from "@/core/types";
+import type { ThemeParam } from "@/core/types";
 import IconPicker from "./IconPicker";
-
-/** Extract a scalar value from a Sides/Corners object or pass through primitives. */
-function extractThemeDefault(val: unknown): string | number | undefined {
-  if (val == null) return undefined;
-  if (typeof val === "string" || typeof val === "number") return val;
-  if (typeof val === "object") {
-    if ("top" in (val as Sides<unknown>)) return (val as Sides<unknown>).top as string | number;
-    if ("topLeft" in (val as Corners<unknown>)) return (val as Corners<unknown>).topLeft as string | number;
-  }
-  return undefined;
-}
 
 export default function PropertyPanel() {
   const selectedNodeId = useEditorStore((s) => s.selectedNodeId);
   const node = useProjectStore((s) => s.nodes.find((n) => n.id === selectedNodeId));
+  const globalThemeId = useProjectStore((s) => s.globalThemeId);
   const updateParamValues = useProjectStore((s) => s.updateParamValues);
   const triggerRefresh = useEditorStore((s) => s.triggerRefresh);
   const compactMode = useEditorStore((s) => s.compactMode);
@@ -36,19 +25,17 @@ export default function PropertyPanel() {
     );
   }
 
-  const def = ComponentRegistry.get(node.componentType);
-  if (!def) return null;
+  const compDef = ThemeRegistry.getComponent(globalThemeId, node.componentType);
+  if (!compDef) return null;
 
-  const theme = ThemeEngine.resolve(useProjectStore.getState().globalThemeId, node.componentType);
-  const editableParams = def.params.filter((p) => !p.variantDriven);
   const paramValues = node.paramValues ?? {};
 
   // Split into common and advanced
-  const commonParams = editableParams.filter((p) => p.common);
-  const advancedParams = editableParams.filter((p) => !p.common);
+  const commonParams = compDef.params.filter((p) => p.common);
+  const advancedParams = compDef.params.filter((p) => !p.common);
 
   // Group advanced params
-  const groups = new Map<string, ComponentParam[]>();
+  const groups = new Map<string, ThemeParam[]>();
   for (const p of advancedParams) {
     const group = p.group ?? "其他";
     if (!groups.has(group)) groups.set(group, []);
@@ -77,7 +64,6 @@ export default function PropertyPanel() {
               param={param}
               value={getValue(param.key, param.defaultValue)}
               onChange={(v) => setValue(param.key, v)}
-              theme={theme}
               size={compactMode ? "xs" : "sm"}
             />
           ))}
@@ -103,7 +89,6 @@ export default function PropertyPanel() {
                         param={param}
                         value={getValue(param.key, param.defaultValue)}
                         onChange={(v) => setValue(param.key, v)}
-                        theme={theme}
                         size={compactMode ? "xs" : "sm"}
                       />
                     ))}
@@ -119,18 +104,13 @@ export default function PropertyPanel() {
 }
 
 interface ParamControlProps {
-  param: ComponentParam;
+  param: ThemeParam;
   value: unknown;
   onChange: (value: unknown) => void;
-  theme: ResolvedTheme;
   size?: "xs" | "sm";
 }
 
-function ParamControl({ param, value, onChange, theme, size = "sm" }: ParamControlProps) {
-  // Resolve the theme default for display (extract scalar from Sides/Corners)
-  const rawThemeDefault = param.themeVariable ? theme.variables[param.themeVariable] : undefined;
-  const themeDefault = extractThemeDefault(rawThemeDefault);
-
+function ParamControl({ param, value, onChange, size = "sm" }: ParamControlProps) {
   return (
     <Box>
       <HStack justify="space-between" mb={1}>
@@ -195,7 +175,7 @@ function ParamControl({ param, value, onChange, theme, size = "sm" }: ParamContr
             h={size === "xs" ? "24px" : "32px"}
             p={0}
             border="none"
-            value={(value as string) || (typeof themeDefault === "string" ? themeDefault : "#000000")}
+            value={(value as string) || "#000000"}
             onChange={(e) => onChange(e.target.value)}
           />
           <Input
@@ -203,7 +183,7 @@ function ParamControl({ param, value, onChange, theme, size = "sm" }: ParamContr
             flex={1}
             value={(value as string) ?? ""}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={typeof themeDefault === "string" ? `主题默认 ${themeDefault}` : "留空使用主题默认"}
+            placeholder="颜色值"
           />
         </HStack>
       )}

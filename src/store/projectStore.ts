@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { nanoid } from "nanoid";
-import type { ProjectNode } from "@/core/types";
-import { ComponentRegistry } from "@/core/ComponentRegistry";
+import type { ProjectNode, ThemeColors } from "@/core/types";
+import { ThemeRegistry } from "@/core/ThemeRegistry";
 import * as persistence from "@/services/persistence";
 import type { ProjectMeta } from "@/services/persistence";
 
@@ -28,6 +28,9 @@ interface ProjectState {
   /** Theme for the current project */
   globalThemeId: string;
   setGlobalThemeId: (themeId: string) => void;
+  /** User-customized theme color overrides */
+  themeColors: Partial<ThemeColors>;
+  setThemeColors: (colors: Partial<ThemeColors>) => void;
 
   // CRUD
   addFolder: (name: string, parentId: string | null) => string;
@@ -37,7 +40,6 @@ interface ProjectState {
   duplicateNode: (id: string) => string | null;
   moveNode: (id: string, newParentId: string | null, targetNodeId?: string, placement?: "top" | "bottom") => void;
   updateParamValues: (id: string, values: Record<string, unknown>) => void;
-  updateSelectedVariants: (id: string, variants: string[]) => void;
   setNodes: (nodes: ProjectNode[]) => void;
 
   // Helpers
@@ -82,6 +84,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         activeProjectDescription: "",
         nodes: [],
         globalThemeId: DEFAULT_THEME_ID,
+        themeColors: {},
       });
     }
     await get().loadProjectList();
@@ -106,11 +109,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       activeProjectDescription: data.description || "",
       nodes: data.nodes ?? [],
       globalThemeId: data.globalThemeId || DEFAULT_THEME_ID,
+      themeColors: data.themeColors ?? {},
     });
   },
 
   closeProject() {
-    const { activeProjectId, nodes, globalThemeId, activeProjectName, activeProjectDescription } = get();
+    const { activeProjectId, nodes, globalThemeId, themeColors, activeProjectName, activeProjectDescription } = get();
     if (activeProjectId) {
       persistence.getProject(activeProjectId).then((existing) => {
         if (existing) {
@@ -120,6 +124,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             description: activeProjectDescription,
             nodes,
             globalThemeId,
+            themeColors,
           });
         }
       });
@@ -131,11 +136,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       activeProjectDescription: "",
       nodes: [],
       globalThemeId: DEFAULT_THEME_ID,
+      themeColors: {},
     });
   },
 
   async persistCurrentProject() {
-    const { activeProjectId, nodes, globalThemeId, activeProjectName, activeProjectDescription } = get();
+    const { activeProjectId, nodes, globalThemeId, themeColors, activeProjectName, activeProjectDescription } = get();
     if (!activeProjectId) return;
     const existing = await persistence.getProject(activeProjectId);
     if (existing) {
@@ -145,6 +151,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         description: activeProjectDescription,
         nodes,
         globalThemeId,
+        themeColors,
       });
     }
     await get().loadProjectList();
@@ -175,6 +182,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   nodes: [],
   globalThemeId: DEFAULT_THEME_ID,
   setGlobalThemeId: (themeId) => set({ globalThemeId: themeId }),
+  themeColors: {},
+  setThemeColors: (colors) => set({ themeColors: colors }),
 
   addFolder(name, parentId) {
     const id = nanoid(8);
@@ -193,17 +202,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   addComponent(name, parentId, componentType) {
     const id = nanoid(8);
     const siblings = get().getChildren(parentId);
-    const def = ComponentRegistry.get(componentType);
-    const selectedVariants = def ? def.variants.filter((v) => v.name !== "disabled").map((v) => v.name) : undefined;
+    const compDef = ThemeRegistry.getComponent(get().globalThemeId, componentType);
     const node: ProjectNode = {
       id,
-      name,
+      name: name || compDef?.name || componentType,
       type: "component",
       parentId,
       order: siblings.length,
       componentType,
       paramValues: {},
-      selectedVariants,
     };
     set((s) => ({ nodes: [...s.nodes, node] }));
     return id;
@@ -294,12 +301,6 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   updateParamValues(id, values) {
     set((s) => ({
       nodes: s.nodes.map((n) => (n.id === id ? { ...n, paramValues: { ...n.paramValues, ...values } } : n)),
-    }));
-  },
-
-  updateSelectedVariants(id, variants) {
-    set((s) => ({
-      nodes: s.nodes.map((n) => (n.id === id ? { ...n, selectedVariants: variants } : n)),
     }));
   },
 
