@@ -5,7 +5,8 @@ import { renderButton } from "@/definitions/components/ButtonComponent";
 import { renderCheckbox } from "@/definitions/components/CheckboxComponent";
 import { renderToggle } from "@/definitions/components/ToggleComponent";
 import { renderSliderTrack, renderSliderKnob } from "@/definitions/components/SliderComponent";
-import { lighten, darken, withAlpha } from "@/core/utils/colors";
+import { lighten, darken, withAlpha, lerpColor } from "@/core/utils/colors";
+import { easyEase, generateFrameTimes } from "@/core/utils/tween";
 import {
   labelParam,
   fontSizeParam,
@@ -56,7 +57,7 @@ function resolveButtonColors(
       borderColor = "none";
       borderWidth = 0;
       break;
-    default: // primary
+    default:
       fill = primary;
       textColor = colors.onPrimary;
       borderColor = "none";
@@ -80,7 +81,7 @@ function resolveButtonColors(
       }
       break;
     case "disabled":
-      opacity = 0.35;
+      opacity = 0.4;
       break;
   }
 
@@ -89,30 +90,30 @@ function resolveButtonColors(
 
 // ─── Theme Definition ────────────────────────────────────────────────
 
-export const fluentDarkTheme: ThemeDef = {
-  id: "fluent-dark",
-  name: "Fluent UI 暗色",
+export const fluentTheme: ThemeDef = {
+  id: "fluent",
+  name: "Fluent UI",
   colorDefs: [
-    { key: "primary", label: "主色调", defaultValue: "#115EA3" },
+    { key: "primary", label: "主色调", defaultValue: "#0F6CBD" },
     { key: "onPrimary", label: "主色文字", defaultValue: "#FFFFFF" },
-    { key: "secondary", label: "次要色", defaultValue: "#292929" },
-    { key: "background", label: "背景色", defaultValue: "#1F1F1F" },
-    { key: "surface", label: "表面色", defaultValue: "#2D2D2D" },
-    { key: "text", label: "文字色", defaultValue: "#FFFFFF" },
-    { key: "textSecondary", label: "次要文字", defaultValue: "#B0B0B0" },
-    { key: "label", label: "标签色", defaultValue: "#E0E0E0" },
-    { key: "border", label: "边框色", defaultValue: "#666666" },
+    { key: "secondary", label: "次要色", defaultValue: "#FFFFFF" },
+    { key: "background", label: "背景色", defaultValue: "#FAFAFA" },
+    { key: "surface", label: "表面色", defaultValue: "#F5F5F5" },
+    { key: "text", label: "文字色", defaultValue: "#242424" },
+    { key: "textSecondary", label: "次要文字", defaultValue: "#616161" },
+    { key: "label", label: "标签色", defaultValue: "#242424" },
+    { key: "border", label: "边框色", defaultValue: "#D1D1D1" },
   ],
   defaultColors: {
-    primary: "#115EA3",
+    primary: "#0F6CBD",
     onPrimary: "#FFFFFF",
-    secondary: "#292929",
-    background: "#1F1F1F",
-    surface: "#2D2D2D",
-    text: "#FFFFFF",
-    textSecondary: "#B0B0B0",
-    label: "#E0E0E0",
-    border: "#666666",
+    secondary: "#FFFFFF",
+    background: "#FAFAFA",
+    surface: "#F5F5F5",
+    text: "#242424",
+    textSecondary: "#616161",
+    label: "#242424",
+    border: "#D1D1D1",
   },
   components: {
     // ── Button ─────────────────────────────────────────────────────
@@ -230,11 +231,11 @@ export const fluentDarkTheme: ThemeDef = {
       params: [
         { ...labelParam, defaultValue: "" },
         {
-          key: "on",
-          label: "开启",
+          key: "generateAnimFrames",
+          label: "生成动画帧",
           type: "boolean",
           defaultValue: false,
-          group: "状态",
+          group: "造型",
           common: true,
         },
         {
@@ -257,27 +258,58 @@ export const fluentDarkTheme: ThemeDef = {
         opacityParam,
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
-        const isOn = (params.on as boolean) ?? false;
-        const trackOnColor = colors.primary;
-        const trackOffColor = colors.border;
+        const generateAnimFrames = (params.generateAnimFrames as boolean) ?? false;
+        const trackWidth = (params.trackWidth as number) ?? 44;
+        const trackHeight = (params.trackHeight as number) ?? 22;
+        const label = (params.label as string) ?? "";
+        const labelFontSize = (params.fontSize as number) ?? 14;
+        const opacity = (params.opacity as number) ?? 1;
 
-        const svg = renderToSvg((draw) => {
-          renderToggle(draw, {
-            trackColor: isOn ? trackOnColor : trackOffColor,
-            knobColor: colors.background,
-            fontFamily: FONT_FAMILY,
-            on: isOn,
-            trackWidth: (params.trackWidth as number) ?? 44,
-            trackHeight: (params.trackHeight as number) ?? 22,
-            label: (params.label as string) ?? "",
-            labelFontSize: (params.fontSize as number) ?? 14,
-            labelColor: colors.label,
-            opacity: (params.opacity as number) ?? 1,
+        const costumes: CostumeOutput[] = [];
+
+        // Default: two static costumes (off + on)
+        for (const isOn of [false, true]) {
+          const svg = renderToSvg((draw) => {
+            renderToggle(draw, {
+              trackColor: isOn ? colors.primary : colors.border,
+              knobColor: colors.background,
+              fontFamily: FONT_FAMILY,
+              on: isOn,
+              trackWidth,
+              trackHeight,
+              label,
+              labelFontSize,
+              labelColor: colors.label,
+              opacity,
+            });
           });
-        });
+          costumes.push({ name: `开关-${isOn ? "开启" : "关闭"}`, svg });
+        }
 
-        const stateName = isOn ? "开启" : "关闭";
-        return [{ name: `开关-${stateName}`, svg }];
+        // Optional: animation frames (off → on), easyEase, 30fps, 200ms
+        if (generateAnimFrames) {
+          const frameTimes = generateFrameTimes(30, 200);
+          frameTimes.forEach((t, i) => {
+            const eased = easyEase(t);
+            const svg = renderToSvg((draw) => {
+              renderToggle(draw, {
+                trackColor: lerpColor(colors.border, colors.primary, eased),
+                knobColor: colors.background,
+                fontFamily: FONT_FAMILY,
+                progress: eased,
+                trackWidth,
+                trackHeight,
+                label,
+                labelFontSize,
+                labelColor: colors.label,
+                opacity,
+              });
+            });
+            costumes.push({ name: `开关-动画-${i}`, svg });
+          });
+        }
+
+        return costumes;
       },
     },
 
@@ -355,7 +387,6 @@ export const fluentDarkTheme: ThemeDef = {
         const costumes: CostumeOutput[] = [];
 
         if (generateSteps) {
-          // Step size = knobSize so the knob visually covers the gap between steps
           const step = Math.max(1, knobSize);
           const count = Math.ceil(trackWidth / step);
           for (let i = 0; i <= count; i++) {
@@ -373,7 +404,6 @@ export const fluentDarkTheme: ThemeDef = {
           });
         }
 
-        // Always generate one knob
         costumes.push({
           name: "滑块旋钮",
           svg: renderToSvg((draw) =>

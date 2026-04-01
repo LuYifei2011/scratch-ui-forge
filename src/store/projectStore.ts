@@ -5,7 +5,7 @@ import { ThemeRegistry } from "@/core/ThemeRegistry";
 import * as persistence from "@/services/persistence";
 import type { ProjectMeta } from "@/services/persistence";
 
-const DEFAULT_THEME_ID = "fluent-light";
+const DEFAULT_THEME_ID = "fluent";
 
 interface ProjectState {
   // ─── Multi-project management ──────────────────────────────────────

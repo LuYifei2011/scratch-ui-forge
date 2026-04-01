@@ -24,7 +24,7 @@ export async function exportCostumesZip(
  */
 export async function exportBatchZip(
   nodes: ProjectNode[],
-  globalThemeId = "fluent-light",
+  globalThemeId = "fluent",
   themeColors?: Partial<ThemeColors>,
   zipName = "scratch-ui-forge-export.zip"
 ): Promise<void> {

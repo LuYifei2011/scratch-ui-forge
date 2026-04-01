@@ -5,7 +5,7 @@ import { useEditorStore } from "@/store/editorStore";
 import { ThemeRegistry } from "@/core/ThemeRegistry";
 import SimpleSelect from "@/components/ui/simple-select";
 
-const DEFAULT_THEME_ID = "fluent-light";
+const DEFAULT_THEME_ID = "fluent";
 
 interface ProjectSettingsDialogProps {
   open: boolean;
