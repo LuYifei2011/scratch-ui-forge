@@ -5,7 +5,8 @@ import { renderButton } from "@/definitions/components/ButtonComponent";
 import { renderCheckbox } from "@/definitions/components/CheckboxComponent";
 import { renderToggle } from "@/definitions/components/ToggleComponent";
 import { renderSliderTrack, renderSliderKnob } from "@/definitions/components/SliderComponent";
-import { lighten, darken, withAlpha } from "@/core/utils/colors";
+import { lighten, darken, withAlpha, lerpColor } from "@/core/utils/colors";
+import { easyEase, generateFrameTimes } from "@/core/utils/tween";
 import {
   labelParam,
   fontSizeParam,
@@ -230,11 +231,11 @@ export const fluentLightTheme: ThemeDef = {
       params: [
         { ...labelParam, defaultValue: "" },
         {
-          key: "on",
-          label: "开启",
+          key: "generateAnimFrames",
+          label: "生成动画帧",
           type: "boolean",
           defaultValue: false,
-          group: "状态",
+          group: "造型",
           common: true,
         },
         {
@@ -257,25 +258,58 @@ export const fluentLightTheme: ThemeDef = {
         opacityParam,
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
-        const isOn = (params.on as boolean) ?? false;
+        const generateAnimFrames = (params.generateAnimFrames as boolean) ?? false;
+        const trackWidth = (params.trackWidth as number) ?? 44;
+        const trackHeight = (params.trackHeight as number) ?? 22;
+        const label = (params.label as string) ?? "";
+        const labelFontSize = (params.fontSize as number) ?? 14;
+        const opacity = (params.opacity as number) ?? 1;
 
-        const svg = renderToSvg((draw) => {
-          renderToggle(draw, {
-            trackColor: isOn ? colors.primary : colors.border,
-            knobColor: colors.background,
-            fontFamily: FONT_FAMILY,
-            on: isOn,
-            trackWidth: (params.trackWidth as number) ?? 44,
-            trackHeight: (params.trackHeight as number) ?? 22,
-            label: (params.label as string) ?? "",
-            labelFontSize: (params.fontSize as number) ?? 14,
-            labelColor: colors.label,
-            opacity: (params.opacity as number) ?? 1,
+        const costumes: CostumeOutput[] = [];
+
+        // Default: two static costumes (off + on)
+        for (const isOn of [false, true]) {
+          const svg = renderToSvg((draw) => {
+            renderToggle(draw, {
+              trackColor: isOn ? colors.primary : colors.border,
+              knobColor: colors.background,
+              fontFamily: FONT_FAMILY,
+              on: isOn,
+              trackWidth,
+              trackHeight,
+              label,
+              labelFontSize,
+              labelColor: colors.label,
+              opacity,
+            });
           });
-        });
+          costumes.push({ name: `开关-${isOn ? "开启" : "关闭"}`, svg });
+        }
 
-        const stateName = isOn ? "开启" : "关闭";
-        return [{ name: `开关-${stateName}`, svg }];
+        // Optional: animation frames (off → on), easyEase, 30fps, 200ms
+        if (generateAnimFrames) {
+          const frameTimes = generateFrameTimes(30, 200);
+          frameTimes.forEach((t, i) => {
+            const eased = easyEase(t);
+            const svg = renderToSvg((draw) => {
+              renderToggle(draw, {
+                trackColor: lerpColor(colors.border, colors.primary, eased),
+                knobColor: colors.background,
+                fontFamily: FONT_FAMILY,
+                progress: eased,
+                trackWidth,
+                trackHeight,
+                label,
+                labelFontSize,
+                labelColor: colors.label,
+                opacity,
+              });
+            });
+            costumes.push({ name: `开关-动画-${i}`, svg });
+          });
+        }
+
+        return costumes;
       },
     },
 

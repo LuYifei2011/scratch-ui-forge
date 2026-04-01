@@ -39,3 +39,10 @@ export function withAlpha(hex: string, alpha: number): string {
   const a = Math.max(0, Math.min(255, Math.round(alpha * 255)));
   return "#" + h + a.toString(16).padStart(2, "0");
 }
+
+/** Linearly interpolate between two hex colors in RGB space. `t` ∈ [0, 1]. */
+export function lerpColor(from: string, to: string, t: number): string {
+  const [r1, g1, b1] = parseHex(from);
+  const [r2, g2, b2] = parseHex(to);
+  return toHex(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t);
+}
