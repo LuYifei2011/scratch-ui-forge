@@ -288,7 +288,7 @@ export const fluentTheme: ThemeDef = {
 
         // Optional: animation frames (off → on), easyEase, 30fps, 200ms
         if (generateAnimFrames) {
-          const frameTimes = generateFrameTimes(30, 200);
+          const frameTimes = generateFrameTimes(30, 200).filter((t) => t > 0 && t < 1);
           frameTimes.forEach((t, i) => {
             const eased = easyEase(t);
             const svg = renderToSvg((draw) => {
