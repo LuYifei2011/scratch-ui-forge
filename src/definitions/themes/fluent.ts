@@ -88,11 +88,42 @@ function resolveButtonColors(
   return { fill, textColor, borderColor, borderWidth, opacity };
 }
 
+// ─── Color Presets ──────────────────────────────────────────────────
+
+const FLUENT_LIGHT_COLORS = {
+  primary: "#0F6CBD",
+  onPrimary: "#FFFFFF",
+  secondary: "#FFFFFF",
+  background: "#FAFAFA",
+  surface: "#F5F5F5",
+  text: "#242424",
+  textSecondary: "#616161",
+  label: "#242424",
+  border: "#D1D1D1",
+};
+
+const FLUENT_DARK_COLORS = {
+  primary: "#0F6CBD",
+  onPrimary: "#FFFFFF",
+  secondary: "#1F1F1F",
+  background: "#141414",
+  surface: "#1F1F1F",
+  text: "#FFFFFF",
+  textSecondary: "#ABABAB",
+  label: "#FFFFFF",
+  border: "#3D3D3D",
+};
+
 // ─── Theme Definition ────────────────────────────────────────────────
 
 export const fluentTheme: ThemeDef = {
   id: "fluent",
   name: "Fluent UI",
+  brandColorKey: "primary",
+  colorPresets: [
+    { id: "light", label: "浅色", colors: FLUENT_LIGHT_COLORS },
+    { id: "dark", label: "深色", colors: FLUENT_DARK_COLORS },
+  ],
   colorDefs: [
     { key: "primary", label: "主色调", defaultValue: "#0F6CBD" },
     { key: "onPrimary", label: "主色文字", defaultValue: "#FFFFFF" },
@@ -104,17 +135,7 @@ export const fluentTheme: ThemeDef = {
     { key: "label", label: "标签色", defaultValue: "#242424" },
     { key: "border", label: "边框色", defaultValue: "#D1D1D1" },
   ],
-  defaultColors: {
-    primary: "#0F6CBD",
-    onPrimary: "#FFFFFF",
-    secondary: "#FFFFFF",
-    background: "#FAFAFA",
-    surface: "#F5F5F5",
-    text: "#242424",
-    textSecondary: "#616161",
-    label: "#242424",
-    border: "#D1D1D1",
-  },
+  defaultColors: FLUENT_LIGHT_COLORS,
   components: {
     // ── Button ─────────────────────────────────────────────────────
     button: {
