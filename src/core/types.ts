@@ -116,6 +116,16 @@ export interface ThemeComponentDef {
   generateCostumes: (colors: ThemeColors, params: Record<string, unknown>) => CostumeOutput[];
 }
 
+// ─── Theme Color Preset ──────────────────────────────────────────────
+
+/** A named color preset that can be applied in one click. */
+export interface ThemeColorPreset {
+  id: string;
+  label: string;
+  /** Full set of color values for this preset */
+  colors: ThemeColors;
+}
+
 // ─── Theme Definition ────────────────────────────────────────────────
 
 /**
@@ -130,6 +140,13 @@ export interface ThemeDef {
   colorDefs: ThemeColorDef[];
   /** Default color values for all slots */
   defaultColors: ThemeColors;
+  /** Named color presets (e.g., light / dark) that users can apply in one click */
+  colorPresets?: ThemeColorPreset[];
+  /**
+   * The key of the primary "brand" color slot (e.g., "primary").
+   * When set, the UI shows this slot prominently for quick customization.
+   */
+  brandColorKey?: string;
   /** Components supported by this theme (keyed by component key, e.g., "button") */
   components: Record<string, ThemeComponentDef>;
 }
