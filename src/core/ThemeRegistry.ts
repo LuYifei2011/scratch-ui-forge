@@ -37,7 +37,7 @@ class ThemeRegistryImpl {
   resolveColors(themeId: string, overrides?: Partial<ThemeColors>): ThemeColors {
     const theme = this.themes.get(themeId);
     if (!theme) return {};
-    return { ...theme.defaultColors, ...overrides };
+    return { ...theme.defaultColors, ...overrides } as ThemeColors;
   }
 
   /**

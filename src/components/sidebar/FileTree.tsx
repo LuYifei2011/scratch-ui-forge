@@ -127,7 +127,7 @@ function TreeNode({ nodeId, depth }: { nodeId: string; depth: number }) {
       moveNode(draggedId, nodeId);
       setExpanded(true);
     } else {
-      moveNode(draggedId, node.parentId, nodeId, dragState);
+      moveNode(draggedId, node.parentId, nodeId, dragState ?? undefined);
     }
   };
 

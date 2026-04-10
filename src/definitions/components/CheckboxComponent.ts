@@ -1,6 +1,6 @@
 import type { Container } from "@svgdotjs/svg.js";
 import { drawRoundedRect } from "@/core/utils/shapes";
-import { drawText, measureText } from "@/core/utils/text";
+import { drawText } from "@/core/utils/text";
 
 // ─── Options ─────────────────────────────────────────────────────────
 

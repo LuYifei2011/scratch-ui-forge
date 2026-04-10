@@ -1,6 +1,5 @@
 import type { Container } from "@svgdotjs/svg.js";
 import type { Sides, Corners } from "@/core/types";
-import { sidesOf, cornersOf } from "@/core/types";
 import { drawRect } from "@/core/utils/shapes";
 import { drawCenteredText, measureText } from "@/core/utils/text";
 import { drawIcon } from "@/core/utils/icons";
