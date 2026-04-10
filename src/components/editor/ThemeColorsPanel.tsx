@@ -1,4 +1,5 @@
 import { Box, HStack, VStack, Text, Input, Button, Accordion } from "@chakra-ui/react";
+import { Tooltip } from "@/components/ui/tooltip";
 import { ThemeRegistry } from "@/core/ThemeRegistry";
 import { useProjectStore } from "@/store/projectStore";
 import { useEditorStore } from "@/store/editorStore";
@@ -13,9 +14,11 @@ interface ColorRowProps {
 function ColorRow({ def, value, onChange }: ColorRowProps) {
   return (
     <HStack justify="space-between" gap={2}>
-      <Text fontSize="xs" color="fg.subtle" flex={1} minW={0} truncate>
-        {def.label}
-      </Text>
+      <Tooltip content={def.label} disabled={def.label.length <= 6}>
+        <Text fontSize="xs" color="fg.subtle" flex={1} minW={0} truncate>
+          {def.label}
+        </Text>
+      </Tooltip>
       <HStack gap={1} flexShrink={0}>
         <Input
           type="color"
@@ -115,9 +118,11 @@ export default function ThemeColorsPanel() {
         {brandDef && (
           <VStack align="stretch" gap={2} mb={otherDefs.length > 0 ? 2 : 0}>
             <HStack justify="space-between" gap={2}>
-              <Text fontSize="xs" fontWeight="medium" flex={1} minW={0} truncate>
-                {brandDef.label}
-              </Text>
+              <Tooltip content={brandDef.label} disabled={brandDef.label.length <= 6}>
+                <Text fontSize="xs" fontWeight="medium" flex={1} minW={0} truncate>
+                  {brandDef.label}
+                </Text>
+              </Tooltip>
               <HStack gap={1} flexShrink={0}>
                 <Input
                   type="color"
@@ -127,13 +132,13 @@ export default function ThemeColorsPanel() {
                   border="none"
                   borderRadius="sm"
                   cursor="pointer"
-                  value={resolvedColors[brandDef.key] || "#000000"}
+                  value={resolvedColors[brandDef.key] ?? brandDef.defaultValue}
                   onChange={(e) => setColor(brandDef.key, e.target.value)}
                 />
                 <Input
                   size="xs"
                   w="80px"
-                  value={resolvedColors[brandDef.key] ?? ""}
+                  value={resolvedColors[brandDef.key] ?? brandDef.defaultValue}
                   onChange={(e) => setColor(brandDef.key, e.target.value)}
                   placeholder="#000000"
                   fontFamily="mono"
