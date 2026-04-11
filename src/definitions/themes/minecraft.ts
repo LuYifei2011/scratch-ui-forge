@@ -7,6 +7,12 @@ import { renderToggle } from "@/definitions/components/ToggleComponent";
 import { renderSliderTrack, renderSliderKnob } from "@/definitions/components/SliderComponent";
 import { darken, lighten } from "@/core/utils/colors";
 import {
+  generateButtonScripts,
+  generateCheckboxScripts,
+  generateToggleScripts,
+  generateSliderScripts,
+} from "@/core/scratch-blocks";
+import {
   labelParam,
   fontSizeParam,
   fontWeightParam,
@@ -26,7 +32,7 @@ function resolveButtonColors(
   colors: ThemeColors
 ): { fill: string; textColor: string; borderColor: string; opacity: number } {
   let fill = colors.surface;
-  let textColor = colors.text;
+  const textColor = colors.text;
   const borderColor = colors.border;
   let opacity = 1;
 
@@ -126,9 +132,10 @@ export const minecraftTheme: ThemeDef = {
           return { name: `按钮-${state}`, svg };
         });
       },
-    },
-
-    // ── Checkbox ───────────────────────────────────────────────────
+      generateScripts(spriteName, costumeNames) {
+        return generateButtonScripts({ spriteName, costumeNames });
+      },
+    }, // ── Checkbox ───────────────────────────────────────────────────
     checkbox: {
       name: "复选框",
       category: "基础",
@@ -176,9 +183,10 @@ export const minecraftTheme: ThemeDef = {
         const stateName = checked ? "已勾选" : "未勾选";
         return [{ name: `复选框-${stateName}`, svg }];
       },
-    },
-
-    // ── Toggle ─────────────────────────────────────────────────────
+      generateScripts(_spriteName, costumeNames) {
+        return generateCheckboxScripts({ costumeNames });
+      },
+    }, // ── Toggle ─────────────────────────────────────────────────────
     toggle: {
       name: "开关",
       category: "基础",
@@ -232,9 +240,10 @@ export const minecraftTheme: ThemeDef = {
         const stateName = isOn ? "开启" : "关闭";
         return [{ name: `开关-${stateName}`, svg }];
       },
-    },
-
-    // ── Slider ─────────────────────────────────────────────────────
+      generateScripts(_spriteName, costumeNames) {
+        return generateToggleScripts({ costumeNames });
+      },
+    }, // ── Slider ─────────────────────────────────────────────────────
     slider: {
       name: "滑块",
       category: "基础",
@@ -340,6 +349,9 @@ export const minecraftTheme: ThemeDef = {
         });
 
         return costumes;
+      },
+      generateScripts(_spriteName, costumeNames) {
+        return generateSliderScripts({ costumeNames });
       },
     },
   },

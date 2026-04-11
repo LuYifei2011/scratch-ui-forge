@@ -8,6 +8,12 @@ import { renderSliderTrack, renderSliderKnob } from "@/definitions/components/Sl
 import { lighten, darken, withAlpha, lerpColor } from "@/core/utils/colors";
 import { easyEase, generateFrameTimes } from "@/core/utils/tween";
 import {
+  generateButtonScripts,
+  generateCheckboxScripts,
+  generateToggleScripts,
+  generateSliderScripts,
+} from "@/core/scratch-blocks";
+import {
   labelParam,
   fontSizeParam,
   fontWeightParam,
@@ -193,6 +199,9 @@ export const fluentTheme: ThemeDef = {
           return { name: `按钮-${state}`, svg };
         });
       },
+      generateScripts(spriteName, costumeNames) {
+        return generateButtonScripts({ spriteName, costumeNames });
+      },
     },
 
     // ── Checkbox ───────────────────────────────────────────────────
@@ -242,6 +251,9 @@ export const fluentTheme: ThemeDef = {
 
         const stateName = checked ? "已勾选" : "未勾选";
         return [{ name: `复选框-${stateName}`, svg }];
+      },
+      generateScripts(_spriteName, costumeNames) {
+        return generateCheckboxScripts({ costumeNames });
       },
     },
 
@@ -331,6 +343,9 @@ export const fluentTheme: ThemeDef = {
         }
 
         return costumes;
+      },
+      generateScripts(_spriteName, costumeNames) {
+        return generateToggleScripts({ costumeNames });
       },
     },
 
@@ -439,6 +454,10 @@ export const fluentTheme: ThemeDef = {
 
         return costumes;
       },
+      generateScripts(_spriteName, costumeNames) {
+        return generateSliderScripts({ costumeNames });
+      },
     },
   },
 };
+
