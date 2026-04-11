@@ -94,8 +94,6 @@ export function generateToggleScripts(
       fields: { VARIABLE: [varName, varId] },
     });
 
-    let ifLastBlockId = setToOneId;
-
     if (isAnimMode && animFrameCount > 0) {
       // repeat (animFrameCount) { next costume; wait 0.03 }
       const nextCostumeId = uid();
@@ -121,7 +119,6 @@ export function generateToggleScripts(
 
       setToOne.next = repeatId;
       repeat.parent = setToOneId;
-      ifLastBlockId = repeatId;
 
       extras.push([nextCostumeId, nextCostume]);
       extras.push([waitAnimId, waitAnim]);
@@ -138,7 +135,6 @@ export function generateToggleScripts(
 
       setToOne.next = switchOnId;
       switchOn.parent = setToOneId;
-      ifLastBlockId = switchOnId;
 
       extras.push([switchOnId, switchOn]);
     }
@@ -268,10 +264,6 @@ export function generateToggleScripts(
         ...extras,
       ],
     );
-    // Fix: ensure ifLastBlockId block's next is null (end of chain)
-    if (built.blocks[ifLastBlockId]) {
-      // ifLastBlockId is the last block in the if-branch, next should be null
-    }
     Object.assign(script.blocks, built.blocks);
     script.blocks[hatId].x = 0;
     script.blocks[hatId].y = 300;
