@@ -1,4 +1,6 @@
 import type { ThemeDef, ThemeComponentDef, ThemeColors, CostumeOutput } from "./types";
+import type { ScratchSpriteScript } from "./scratch-blocks/types";
+import { emptySpriteScript } from "./scratch-blocks/types";
 
 class ThemeRegistryImpl {
   private themes = new Map<string, ThemeDef>();
@@ -66,6 +68,33 @@ class ThemeRegistryImpl {
     Object.assign(mergedParams, params);
 
     return compDef.generateCostumes(colors, mergedParams);
+  }
+
+  /**
+   * Generate Scratch scripts for a component.
+   * @param themeId       The theme to use
+   * @param componentKey  The component key (e.g., "button")
+   * @param spriteName    Name of the sprite being exported
+   * @param costumeNames  Names of the costumes that were generated
+   * @param params        User-edited parameter values
+   */
+  generateScripts(
+    themeId: string,
+    componentKey: string,
+    spriteName: string,
+    costumeNames: string[],
+    params: Record<string, unknown>,
+  ): ScratchSpriteScript {
+    const compDef = this.getComponent(themeId, componentKey);
+    if (!compDef?.generateScripts) return emptySpriteScript();
+
+    const mergedParams: Record<string, unknown> = {};
+    for (const p of compDef.params) {
+      mergedParams[p.key] = p.defaultValue;
+    }
+    Object.assign(mergedParams, params);
+
+    return compDef.generateScripts(spriteName, costumeNames, mergedParams);
   }
 }
 

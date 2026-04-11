@@ -7,6 +7,12 @@ import { renderToggle } from "@/definitions/components/ToggleComponent";
 import { renderSliderTrack, renderSliderKnob } from "@/definitions/components/SliderComponent";
 import { darken, lighten } from "@/core/utils/colors";
 import {
+  generateButtonScripts,
+  generateCheckboxScripts,
+  generateToggleScripts,
+  generateSliderScripts,
+} from "@/core/scratch-blocks";
+import {
   labelParam,
   fontSizeParam,
   fontWeightParam,
@@ -26,7 +32,7 @@ function resolveButtonColors(
   colors: ThemeColors
 ): { fill: string; textColor: string; borderColor: string; opacity: number } {
   let fill = colors.surface;
-  let textColor = colors.text;
+  const textColor = colors.text;
   const borderColor = colors.border;
   let opacity = 1;
 
@@ -80,10 +86,7 @@ export const minecraftTheme: ThemeDef = {
       iconSlots: ["icon"],
       params: [
         { ...labelParam, defaultValue: "按钮" },
-        { key: "stateDefault", label: "默认状态", type: "boolean", defaultValue: true, group: "状态", common: true },
-        { key: "stateHover", label: "悬停状态", type: "boolean", defaultValue: true, group: "状态", common: true },
-        { key: "statePressed", label: "按下状态", type: "boolean", defaultValue: true, group: "状态", common: true },
-        { key: "stateDisabled", label: "禁用状态", type: "boolean", defaultValue: true, group: "状态", common: true },
+        { key: "stateDisabled", label: "禁用状态", type: "boolean", defaultValue: false, group: "状态", common: true },
         iconParam,
         iconPositionParam,
         ...sizeParams,
@@ -94,14 +97,9 @@ export const minecraftTheme: ThemeDef = {
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
         const userOpacity = params.opacity as number ?? 1;
-        const allStates: [string, string][] = [
-          ["default", "stateDefault"],
-          ["hover", "stateHover"],
-          ["pressed", "statePressed"],
-          ["disabled", "stateDisabled"],
-        ];
-        const enabledStates = allStates.filter(([, key]) => params[key] !== false).map(([s]) => s);
-        if (enabledStates.length === 0) enabledStates.push("default");
+        // Always generate default, hover, pressed; optionally disabled
+        const enabledStates = ["default", "hover", "pressed"];
+        if (params.stateDisabled === true) enabledStates.push("disabled");
 
         return enabledStates.map((state) => {
           const resolved = resolveButtonColors(state, colors);
@@ -126,22 +124,15 @@ export const minecraftTheme: ThemeDef = {
           return { name: `按钮-${state}`, svg };
         });
       },
-    },
-
-    // ── Checkbox ───────────────────────────────────────────────────
+      generateScripts(spriteName, costumeNames) {
+        return generateButtonScripts({ spriteName, costumeNames });
+      },
+    }, // ── Checkbox ───────────────────────────────────────────────────
     checkbox: {
       name: "复选框",
       category: "基础",
       params: [
         { ...labelParam, defaultValue: "复选框" },
-        {
-          key: "checked",
-          label: "勾选",
-          type: "boolean",
-          defaultValue: false,
-          group: "状态",
-          common: true,
-        },
         {
           key: "size",
           label: "选框大小",
@@ -155,30 +146,33 @@ export const minecraftTheme: ThemeDef = {
         opacityParam,
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
-        const checked = (params.checked as boolean) ?? false;
-        const svg = renderToSvg((draw) => {
-          renderCheckbox(draw, {
-            checkboxColor: colors.primary,
-            checkColor: colors.onPrimary,
-            borderColor: colors.border,
-            fontFamily: FONT_FAMILY,
-            checked,
-            uncheckedFill: colors.surface,
-            size: (params.size as number) ?? 24,
-            label: (params.label as string) ?? "复选框",
-            labelFontSize: (params.fontSize as number) ?? 14,
-            labelColor: colors.label,
-            borderRadius: 0,
-            opacity: (params.opacity as number) ?? 1,
+        // Always generate both unchecked and checked costumes
+        return [false, true].map((checked) => {
+          const svg = renderToSvg((draw) => {
+            renderCheckbox(draw, {
+              checkboxColor: colors.primary,
+              checkColor: colors.onPrimary,
+              borderColor: colors.border,
+              fontFamily: FONT_FAMILY,
+              checked,
+              uncheckedFill: colors.surface,
+              size: (params.size as number) ?? 24,
+              label: (params.label as string) ?? "复选框",
+              labelFontSize: (params.fontSize as number) ?? 14,
+              labelColor: colors.label,
+              borderRadius: 0,
+              opacity: (params.opacity as number) ?? 1,
+            });
           });
+
+          const stateName = checked ? "已勾选" : "未勾选";
+          return { name: `复选框-${stateName}`, svg };
         });
-
-        const stateName = checked ? "已勾选" : "未勾选";
-        return [{ name: `复选框-${stateName}`, svg }];
       },
-    },
-
-    // ── Toggle ─────────────────────────────────────────────────────
+      generateScripts(_spriteName, costumeNames) {
+        return generateCheckboxScripts({ costumeNames });
+      },
+    }, // ── Toggle ─────────────────────────────────────────────────────
     toggle: {
       name: "开关",
       category: "基础",
@@ -232,9 +226,10 @@ export const minecraftTheme: ThemeDef = {
         const stateName = isOn ? "开启" : "关闭";
         return [{ name: `开关-${stateName}`, svg }];
       },
-    },
-
-    // ── Slider ─────────────────────────────────────────────────────
+      generateScripts(_spriteName, costumeNames) {
+        return generateToggleScripts({ costumeNames });
+      },
+    }, // ── Slider ─────────────────────────────────────────────────────
     slider: {
       name: "滑块",
       category: "基础",
@@ -340,6 +335,9 @@ export const minecraftTheme: ThemeDef = {
         });
 
         return costumes;
+      },
+      generateScripts(_spriteName, costumeNames) {
+        return generateSliderScripts({ costumeNames });
       },
     },
   },

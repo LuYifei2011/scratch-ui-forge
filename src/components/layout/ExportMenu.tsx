@@ -2,7 +2,7 @@ import { Menu, IconButton, Portal } from "@chakra-ui/react";
 import { FiDownload, FiPackage, FiBox, FiFileText } from "react-icons/fi";
 import { useProjectStore } from "@/store/projectStore";
 import { useEditorStore } from "@/store/editorStore";
-import { exportCostumesZip, exportBatchZip, exportSprite3 } from "@/services/exporter";
+import { exportCostumesZip, exportBatchZip, exportSprite3, exportBatchSprite3 } from "@/services/exporter";
 import { ThemeRegistry } from "@/core/ThemeRegistry";
 import { saveAs } from "file-saver";
 import { saveProjectToFile } from "@/services/persistence";
@@ -54,12 +54,36 @@ export default function ExportMenu() {
       node.paramValues ?? {},
       themeColors
     );
+    const costumeNames = costumes.map((c) => c.name);
+    const scripts = ThemeRegistry.generateScripts(
+      globalThemeId,
+      node.componentType!,
+      node.name,
+      costumeNames,
+      node.paramValues ?? {}
+    );
+    await exportSprite3(costumes, node.name, scripts);
+  };
+
+  const handleExportSprite3NoScripts = async () => {
+    if (!isValidComponentNode) return;
+    const costumes = ThemeRegistry.generateCostumes(
+      globalThemeId,
+      node.componentType!,
+      node.paramValues ?? {},
+      themeColors
+    );
     await exportSprite3(costumes, node.name);
   };
 
   const handleExportAll = async () => {
     const componentNodes = nodes.filter((n) => n.type === "component");
     await exportBatchZip(componentNodes, globalThemeId, themeColors);
+  };
+
+  const handleExportAllSprite3 = async () => {
+    const componentNodes = nodes.filter((n) => n.type === "component");
+    await exportBatchSprite3(componentNodes, globalThemeId, themeColors);
   };
 
   const handleSaveFile = async () => {
@@ -128,7 +152,21 @@ export default function ExportMenu() {
                   alignItems="center"
                   gap={2}
                 >
-                  <FiBox /> 导出 .sprite3
+                  <FiBox /> 导出 .sprite3（含脚本）
+                </Menu.Item>
+                <Menu.Item
+                  value="export-sprite-no-scripts"
+                  onClick={handleExportSprite3NoScripts}
+                  cursor="pointer"
+                  px={3}
+                  py={1.5}
+                  fontSize="sm"
+                  _hover={{ bg: "bg.muted" }}
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                >
+                  <FiBox /> 导出 .sprite3（不含脚本）
                 </Menu.Item>
                 <Menu.Separator my={1} />
               </>
@@ -145,7 +183,21 @@ export default function ExportMenu() {
               alignItems="center"
               gap={2}
             >
-              <FiPackage /> 批量导出全部组件
+              <FiPackage /> 批量导出全部组件 (SVG)
+            </Menu.Item>
+            <Menu.Item
+              value="export-all-sprite3"
+              onClick={handleExportAllSprite3}
+              cursor="pointer"
+              px={3}
+              py={1.5}
+              fontSize="sm"
+              _hover={{ bg: "bg.muted" }}
+              display="flex"
+              alignItems="center"
+              gap={2}
+            >
+              <FiBox /> 批量导出全部组件 (.sprite3)
             </Menu.Item>
             <Menu.Item
               value="save-file"

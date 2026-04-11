@@ -1,4 +1,5 @@
 import type { Container } from "@svgdotjs/svg.js";
+import type { ScratchSpriteScript } from "./scratch-blocks/types";
 
 // ─── Border / Spacing Primitives ──────────────────────────────────────
 
@@ -114,6 +115,16 @@ export interface ThemeComponentDef {
    * Returns an array of named SVG costumes.
    */
   generateCostumes: (colors: ThemeColors, params: Record<string, unknown>) => CostumeOutput[];
+  /**
+   * Generate Scratch scripts for this component.
+   * Receives the sprite name and the list of costume names actually generated.
+   * Returns blocks, variables, broadcasts, and lists for the sprite manifest.
+   */
+  generateScripts?: (
+    spriteName: string,
+    costumeNames: string[],
+    params: Record<string, unknown>,
+  ) => ScratchSpriteScript;
 }
 
 // ─── Theme Color Preset ──────────────────────────────────────────────
