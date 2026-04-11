@@ -65,6 +65,17 @@ export default function ExportMenu() {
     await exportSprite3(costumes, node.name, scripts);
   };
 
+  const handleExportSprite3NoScripts = async () => {
+    if (!isValidComponentNode) return;
+    const costumes = ThemeRegistry.generateCostumes(
+      globalThemeId,
+      node.componentType!,
+      node.paramValues ?? {},
+      themeColors
+    );
+    await exportSprite3(costumes, node.name);
+  };
+
   const handleExportAll = async () => {
     const componentNodes = nodes.filter((n) => n.type === "component");
     await exportBatchZip(componentNodes, globalThemeId, themeColors);
@@ -141,7 +152,21 @@ export default function ExportMenu() {
                   alignItems="center"
                   gap={2}
                 >
-                  <FiBox /> 导出 .sprite3
+                  <FiBox /> 导出 .sprite3（含脚本）
+                </Menu.Item>
+                <Menu.Item
+                  value="export-sprite-no-scripts"
+                  onClick={handleExportSprite3NoScripts}
+                  cursor="pointer"
+                  px={3}
+                  py={1.5}
+                  fontSize="sm"
+                  _hover={{ bg: "bg.muted" }}
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                >
+                  <FiBox /> 导出 .sprite3（不含脚本）
                 </Menu.Item>
                 <Menu.Separator my={1} />
               </>

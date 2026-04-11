@@ -2,15 +2,16 @@
  * Scratch script templates for toggle / switch components.
  *
  * Generated scripts:
- *   1. 🟢 Green flag → set [开关状态] to 0 → switch to "关闭" costume
+ *   1. 🟢 Green flag → set [开关状态] to 0 → switch to first costume
  *   2. 🖱️ When clicked →
  *        if [开关状态] = 0 then
  *          set to 1
- *          (if anim frames exist → repeat costume animation)
- *          switch to "开启" costume
+ *          (if anim frames → repeat N { next costume, wait })
+ *          (else → switch to "开启" costume)
  *        else
  *          set to 0
- *          switch to "关闭" costume
+ *          (if anim frames → repeat N { switch to previous costume, wait })
+ *          (else → switch to "关闭" costume)
  */
 
 import type { ScratchBlock, ScratchSpriteScript } from "../types";
@@ -34,13 +35,12 @@ export function generateToggleScripts(
   const script = emptySpriteScript();
   const { costumeNames } = opts;
 
-  const offCostume =
-    costumeNames.find((n) => n.includes("关闭")) ?? costumeNames[0];
-  const onCostume =
-    costumeNames.find((n) => n.includes("开启")) ??
-    costumeNames[Math.min(1, costumeNames.length - 1)];
-  const hasAnimFrames = costumeNames.some((n) => n.includes("动画"));
-  const animFrameCount = costumeNames.filter((n) => n.includes("动画")).length;
+  // Detect animation mode: if costumes are numbered sequentially (开关-0, 开关-1, ...)
+  const isAnimMode = costumeNames.length > 2 && costumeNames.some((n) => /开关-\d+/.test(n));
+  const animFrameCount = isAnimMode ? costumeNames.length - 1 : 0;
+
+  const offCostume = costumeNames[0];
+  const onCostume = costumeNames[costumeNames.length - 1];
 
   // Variable: 开关状态
   const varId = uid();
@@ -83,11 +83,10 @@ export function generateToggleScripts(
   // ── Script 2: when clicked → toggle ───────────────────────────────
   {
     const hatId = uid();
-    type Entry = [string, ReturnType<typeof createBlock>];
+    type Entry = [string, ScratchBlock];
     const extras: Entry[] = [];
 
-    // -- "if" branch: turn ON
-    // set 开关状态 to 1
+    // -- Build "if" branch: turn ON (开关状态 == 0)
     const setToOneId = uid();
     const setToOne = createBlock({
       opcode: "data_setvariableto",
@@ -95,17 +94,13 @@ export function generateToggleScripts(
       fields: { VARIABLE: [varName, varId] },
     });
 
-    // Build the "if" sub-stack chain
-    const ifFirstBlockId = setToOneId;
     let ifLastBlockId = setToOneId;
 
-    // If animation frames exist, add: repeat (N) { next costume, wait 0.03s }
-    if (hasAnimFrames && animFrameCount > 0) {
-      // next costume
+    if (isAnimMode && animFrameCount > 0) {
+      // repeat (animFrameCount) { next costume; wait 0.03 }
       const nextCostumeId = uid();
       const nextCostume = createBlock({ opcode: "looks_nextcostume" });
 
-      // wait 0.03
       const waitAnimId = uid();
       const waitAnim = createBlock({
         opcode: "control_wait",
@@ -114,7 +109,6 @@ export function generateToggleScripts(
       nextCostume.next = waitAnimId;
       waitAnim.parent = nextCostumeId;
 
-      // repeat block
       const repeatId = uid();
       const repeat = createBlock({
         opcode: "control_repeat",
@@ -132,26 +126,24 @@ export function generateToggleScripts(
       extras.push([nextCostumeId, nextCostume]);
       extras.push([waitAnimId, waitAnim]);
       extras.push([repeatId, repeat]);
+    } else {
+      // No animation: switch directly to ON costume
+      const switchOnId = uid();
+      const [shOnId, shOn] = costumeShadow(onCostume);
+      const switchOn = createBlock({
+        opcode: "looks_switchcostumeto",
+        inputs: { COSTUME: [1, shOnId] },
+      });
+      extras.push([shOnId, shOn]);
+
+      setToOne.next = switchOnId;
+      switchOn.parent = setToOneId;
+      ifLastBlockId = switchOnId;
+
+      extras.push([switchOnId, switchOn]);
     }
 
-    // switch to ON costume
-    const switchOnId = uid();
-    const [shOnId, shOn] = costumeShadow(onCostume);
-    const switchOn = createBlock({
-      opcode: "looks_switchcostumeto",
-      inputs: { COSTUME: [1, shOnId] },
-    });
-    extras.push([shOnId, shOn]);
-
-    // link last block → switchOn
-    const ifLastBlock = ifLastBlockId === setToOneId ? setToOne :
-      extras.find(([id]) => id === ifLastBlockId)?.[1];
-    if (ifLastBlock) {
-      ifLastBlock.next = switchOnId;
-    }
-    switchOn.parent = ifLastBlockId;
-
-    // -- "else" branch: turn OFF
+    // -- Build "else" branch: turn OFF (开关状态 == 1)
     const setToZeroId = uid();
     const setToZero = createBlock({
       opcode: "data_setvariableto",
@@ -159,16 +151,81 @@ export function generateToggleScripts(
       fields: { VARIABLE: [varName, varId] },
     });
 
-    const switchOffId = uid();
-    const [shOffId, shOff] = costumeShadow(offCostume);
-    const switchOff = createBlock({
-      opcode: "looks_switchcostumeto",
-      inputs: { COSTUME: [1, shOffId] },
-    });
-    extras.push([shOffId, shOff]);
+    if (isAnimMode && animFrameCount > 0) {
+      // repeat (animFrameCount) { previous costume (looks_nextcostume isn't it... 
+      //   Scratch doesn't have a "previous costume" block directly, 
+      //   but we can use: switch costume to ((costume number) - 1)
+      // Actually Scratch has no "previous costume" block. We compute: costume # - 1
 
-    setToZero.next = switchOffId;
-    switchOff.parent = setToZeroId;
+      // costume number reporter
+      const costumeNumId = uid();
+      const costumeNum = createBlock({
+        opcode: "looks_costumenumbername",
+        fields: { NUMBER_NAME: ["number", null] },
+      });
+
+      // (costume number) - 1
+      const subtractId = uid();
+      const subtract = createBlock({
+        opcode: "operator_subtract",
+        inputs: {
+          NUM1: [3, costumeNumId, [4, ""]],
+          NUM2: [1, [4, "1"]],
+        },
+      });
+      costumeNum.parent = subtractId;
+
+      // switch costume to (subtract result)
+      const switchPrevId = uid();
+      const switchPrev = createBlock({
+        opcode: "looks_switchcostumeto",
+        inputs: { COSTUME: [3, subtractId, [10, ""]] },
+      });
+      subtract.parent = switchPrevId;
+
+      // wait
+      const waitRevId = uid();
+      const waitRev = createBlock({
+        opcode: "control_wait",
+        inputs: { DURATION: numberLiteral(0.03) },
+      });
+      switchPrev.next = waitRevId;
+      waitRev.parent = switchPrevId;
+
+      // repeat block
+      const repeatRevId = uid();
+      const repeatRev = createBlock({
+        opcode: "control_repeat",
+        inputs: {
+          TIMES: numberLiteral(animFrameCount),
+          SUBSTACK: [2, switchPrevId],
+        },
+      });
+      switchPrev.parent = repeatRevId;
+
+      setToZero.next = repeatRevId;
+      repeatRev.parent = setToZeroId;
+
+      extras.push([costumeNumId, costumeNum]);
+      extras.push([subtractId, subtract]);
+      extras.push([switchPrevId, switchPrev]);
+      extras.push([waitRevId, waitRev]);
+      extras.push([repeatRevId, repeatRev]);
+    } else {
+      // No animation: switch directly to OFF costume
+      const switchOffId = uid();
+      const [shOffId, shOff] = costumeShadow(offCostume);
+      const switchOff = createBlock({
+        opcode: "looks_switchcostumeto",
+        inputs: { COSTUME: [1, shOffId] },
+      });
+      extras.push([shOffId, shOff]);
+
+      setToZero.next = switchOffId;
+      switchOff.parent = setToZeroId;
+
+      extras.push([switchOffId, switchOff]);
+    }
 
     // -- condition: 开关状态 = 0
     const equalsId = uid();
@@ -184,7 +241,6 @@ export function generateToggleScripts(
         OPERAND2: [1, [10, "0"]],
       },
     });
-    equals.parent = uid(); // will be overwritten below
     varRead.parent = equalsId;
 
     // -- if-else block
@@ -193,7 +249,7 @@ export function generateToggleScripts(
       opcode: "control_if_else",
       inputs: {
         CONDITION: [2, equalsId],
-        SUBSTACK: [2, ifFirstBlockId],
+        SUBSTACK: [2, setToOneId],
         SUBSTACK2: [2, setToZeroId],
       },
     });
@@ -208,12 +264,14 @@ export function generateToggleScripts(
         [equalsId, equals],
         [varReadId, varRead],
         [setToOneId, setToOne],
-        [switchOnId, switchOn],
         [setToZeroId, setToZero],
-        [switchOffId, switchOff],
         ...extras,
       ],
     );
+    // Fix: ensure ifLastBlockId block's next is null (end of chain)
+    if (built.blocks[ifLastBlockId]) {
+      // ifLastBlockId is the last block in the if-branch, next should be null
+    }
     Object.assign(script.blocks, built.blocks);
     script.blocks[hatId].x = 0;
     script.blocks[hatId].y = 300;

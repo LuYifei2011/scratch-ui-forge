@@ -151,10 +151,7 @@ export const fluentTheme: ThemeDef = {
       params: [
         { ...labelParam, defaultValue: "按钮" },
         buttonStyleParam(),
-        { key: "stateDefault", label: "默认状态", type: "boolean", defaultValue: true, group: "状态", common: true },
-        { key: "stateHover", label: "悬停状态", type: "boolean", defaultValue: true, group: "状态", common: true },
-        { key: "statePressed", label: "按下状态", type: "boolean", defaultValue: true, group: "状态", common: true },
-        { key: "stateDisabled", label: "禁用状态", type: "boolean", defaultValue: true, group: "状态", common: true },
+        { key: "stateDisabled", label: "禁用状态", type: "boolean", defaultValue: false, group: "状态", common: true },
         iconParam,
         iconPositionParam,
         ...sizeParams,
@@ -167,14 +164,9 @@ export const fluentTheme: ThemeDef = {
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
         const style = (params.style as string) || "primary";
         const userOpacity = params.opacity as number ?? 1;
-        const allStates: [string, string][] = [
-          ["default", "stateDefault"],
-          ["hover", "stateHover"],
-          ["pressed", "statePressed"],
-          ["disabled", "stateDisabled"],
-        ];
-        const enabledStates = allStates.filter(([, key]) => params[key] !== false).map(([s]) => s);
-        if (enabledStates.length === 0) enabledStates.push("default");
+        // Always generate default, hover, pressed; optionally disabled
+        const enabledStates = ["default", "hover", "pressed"];
+        if (params.stateDisabled === true) enabledStates.push("disabled");
 
         return enabledStates.map((state) => {
           const resolved = resolveButtonColors(style, state, colors);
@@ -211,14 +203,6 @@ export const fluentTheme: ThemeDef = {
       params: [
         { ...labelParam, defaultValue: "复选框" },
         {
-          key: "checked",
-          label: "勾选",
-          type: "boolean",
-          defaultValue: false,
-          group: "状态",
-          common: true,
-        },
-        {
           key: "size",
           label: "选框大小",
           type: "number",
@@ -231,26 +215,28 @@ export const fluentTheme: ThemeDef = {
         opacityParam,
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
-        const checked = (params.checked as boolean) ?? false;
-        const svg = renderToSvg((draw) => {
-          renderCheckbox(draw, {
-            checkboxColor: colors.primary,
-            checkColor: colors.onPrimary,
-            borderColor: colors.border,
-            fontFamily: FONT_FAMILY,
-            checked,
-            uncheckedFill: colors.surface,
-            size: (params.size as number) ?? 20,
-            label: (params.label as string) ?? "复选框",
-            labelFontSize: (params.fontSize as number) ?? 14,
-            labelColor: colors.label,
-            borderRadius: (params.borderRadius as number) ?? 4,
-            opacity: (params.opacity as number) ?? 1,
+        // Always generate both unchecked and checked costumes
+        return [false, true].map((checked) => {
+          const svg = renderToSvg((draw) => {
+            renderCheckbox(draw, {
+              checkboxColor: colors.primary,
+              checkColor: colors.onPrimary,
+              borderColor: colors.border,
+              fontFamily: FONT_FAMILY,
+              checked,
+              uncheckedFill: colors.surface,
+              size: (params.size as number) ?? 20,
+              label: (params.label as string) ?? "复选框",
+              labelFontSize: (params.fontSize as number) ?? 14,
+              labelColor: colors.label,
+              borderRadius: (params.borderRadius as number) ?? 4,
+              opacity: (params.opacity as number) ?? 1,
+            });
           });
-        });
 
-        const stateName = checked ? "已勾选" : "未勾选";
-        return [{ name: `复选框-${stateName}`, svg }];
+          const stateName = checked ? "已勾选" : "未勾选";
+          return { name: `复选框-${stateName}`, svg };
+        });
       },
       generateScripts(_spriteName, costumeNames) {
         return generateCheckboxScripts({ costumeNames });
@@ -300,28 +286,10 @@ export const fluentTheme: ThemeDef = {
 
         const costumes: CostumeOutput[] = [];
 
-        // Default: two static costumes (off + on)
-        for (const isOn of [false, true]) {
-          const svg = renderToSvg((draw) => {
-            renderToggle(draw, {
-              trackColor: isOn ? colors.primary : colors.border,
-              knobColor: colors.background,
-              fontFamily: FONT_FAMILY,
-              on: isOn,
-              trackWidth,
-              trackHeight,
-              label,
-              labelFontSize,
-              labelColor: colors.label,
-              opacity,
-            });
-          });
-          costumes.push({ name: `开关-${isOn ? "开启" : "关闭"}`, svg });
-        }
-
-        // Optional: animation frames (off → on), easyEase, 30fps, 200ms
         if (generateAnimFrames) {
-          const frameTimes = generateFrameTimes(30, 200).filter((t) => t > 0 && t < 1);
+          // With animation: generate sequential progress frames (off→on)
+          // so "next costume" plays the animation correctly
+          const frameTimes = [0, ...generateFrameTimes(30, 200).filter((t) => t > 0 && t < 1), 1];
           frameTimes.forEach((t, i) => {
             const eased = easyEase(t);
             const svg = renderToSvg((draw) => {
@@ -338,8 +306,27 @@ export const fluentTheme: ThemeDef = {
                 opacity,
               });
             });
-            costumes.push({ name: `开关-动画-${i}`, svg });
+            costumes.push({ name: `开关-${i}`, svg });
           });
+        } else {
+          // No animation: just off and on
+          for (const isOn of [false, true]) {
+            const svg = renderToSvg((draw) => {
+              renderToggle(draw, {
+                trackColor: isOn ? colors.primary : colors.border,
+                knobColor: colors.background,
+                fontFamily: FONT_FAMILY,
+                on: isOn,
+                trackWidth,
+                trackHeight,
+                label,
+                labelFontSize,
+                labelColor: colors.label,
+                opacity,
+              });
+            });
+            costumes.push({ name: `开关-${isOn ? "开启" : "关闭"}`, svg });
+          }
         }
 
         return costumes;
