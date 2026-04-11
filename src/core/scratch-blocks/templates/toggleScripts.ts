@@ -99,14 +99,6 @@ export function generateToggleScripts(
       const nextCostumeId = uid();
       const nextCostume = createBlock({ opcode: "looks_nextcostume" });
 
-      const waitAnimId = uid();
-      const waitAnim = createBlock({
-        opcode: "control_wait",
-        inputs: { DURATION: numberLiteral(0.03) },
-      });
-      nextCostume.next = waitAnimId;
-      waitAnim.parent = nextCostumeId;
-
       const repeatId = uid();
       const repeat = createBlock({
         opcode: "control_repeat",
@@ -121,7 +113,6 @@ export function generateToggleScripts(
       repeat.parent = setToOneId;
 
       extras.push([nextCostumeId, nextCostume]);
-      extras.push([waitAnimId, waitAnim]);
       extras.push([repeatId, repeat]);
     } else {
       // No animation: switch directly to ON costume
@@ -179,15 +170,6 @@ export function generateToggleScripts(
       });
       subtract.parent = switchPrevId;
 
-      // wait
-      const waitRevId = uid();
-      const waitRev = createBlock({
-        opcode: "control_wait",
-        inputs: { DURATION: numberLiteral(0.03) },
-      });
-      switchPrev.next = waitRevId;
-      waitRev.parent = switchPrevId;
-
       // repeat block
       const repeatRevId = uid();
       const repeatRev = createBlock({
@@ -205,7 +187,6 @@ export function generateToggleScripts(
       extras.push([costumeNumId, costumeNum]);
       extras.push([subtractId, subtract]);
       extras.push([switchPrevId, switchPrev]);
-      extras.push([waitRevId, waitRev]);
       extras.push([repeatRevId, repeatRev]);
     } else {
       // No animation: switch directly to OFF costume
