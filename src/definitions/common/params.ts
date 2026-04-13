@@ -16,6 +16,25 @@ export const labelParam: ThemeParam = {
   common: true,
 };
 
+export const fontFamilyParam: ThemeParam = {
+  key: "fontFamily",
+  label: "字体",
+  type: "select",
+  defaultValue: "Sans Serif",
+  group: "文字",
+  constraints: {
+    options: [
+      { label: "Sans Serif", value: "Sans Serif" },
+      { label: "Serif", value: "Serif" },
+      { label: "Handwriting", value: "Handwriting" },
+      { label: "Marker", value: "Marker" },
+      { label: "Curly", value: "Curly" },
+      { label: "Pixel", value: "Pixel" },
+      { label: "Scratch", value: "Scratch" },
+    ],
+  },
+};
+
 export const fontSizeParam: ThemeParam = {
   key: "fontSize",
   label: "字号",

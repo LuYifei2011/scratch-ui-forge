@@ -5,6 +5,10 @@ import { renderButton } from "@/definitions/components/ButtonComponent";
 import { renderCheckbox } from "@/definitions/components/CheckboxComponent";
 import { renderToggle } from "@/definitions/components/ToggleComponent";
 import { renderSliderTrack, renderSliderKnob } from "@/definitions/components/SliderComponent";
+import { renderRadio } from "@/definitions/components/RadioComponent";
+import { renderProgressBar } from "@/definitions/components/ProgressBarComponent";
+import { renderTextInput } from "@/definitions/components/TextInputComponent";
+import { renderTextLabel } from "@/definitions/components/TextLabelComponent";
 import { lighten, darken, withAlpha, lerpColor } from "@/core/utils/colors";
 import { easyEase, generateFrameTimes } from "@/core/utils/tween";
 import {
@@ -12,9 +16,14 @@ import {
   generateCheckboxScripts,
   generateToggleScripts,
   generateSliderScripts,
+  generateRadioScripts,
+  generateProgressBarScripts,
+  generateTextInputScripts,
+  generateTextLabelScripts,
 } from "@/core/scratch-blocks";
 import {
   labelParam,
+  fontFamilyParam,
   fontSizeParam,
   fontWeightParam,
   opacityParam,
@@ -26,7 +35,12 @@ import {
   borderWidthParam,
 } from "@/definitions/common/params";
 
-const FONT_FAMILY = "Sans Serif, Segoe UI, Helvetica, Arial, sans-serif";
+const DEFAULT_FONT_FAMILY = "Sans Serif";
+
+/** Resolve font family from params, with fallback to default. */
+function resolveFontFamily(params: Record<string, unknown>): string {
+  return (params.fontFamily as string) || DEFAULT_FONT_FAMILY;
+}
 
 // ─── Helper: resolve button colors per style + state ─────────────────
 
@@ -155,6 +169,7 @@ export const fluentTheme: ThemeDef = {
         iconParam,
         iconPositionParam,
         ...sizeParams,
+        fontFamilyParam,
         fontSizeParam,
         fontWeightParam,
         borderRadiusParam(4),
@@ -164,6 +179,7 @@ export const fluentTheme: ThemeDef = {
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
         const style = (params.style as string) || "primary";
         const userOpacity = params.opacity as number ?? 1;
+        const fontFamily = resolveFontFamily(params);
         // Always generate default, hover, pressed; optionally disabled
         const enabledStates = ["default", "hover", "pressed"];
         if (params.stateDisabled === true) enabledStates.push("disabled");
@@ -174,7 +190,7 @@ export const fluentTheme: ThemeDef = {
             renderButton(draw, {
               fill: resolved.fill,
               textColor: resolved.textColor,
-              fontFamily: FONT_FAMILY,
+              fontFamily,
               label: (params.label as string) ?? "按钮",
               icon: (params.icon as string) ?? "",
               iconPosition: (params.iconPosition as "left" | "right") ?? "left",
@@ -210,11 +226,13 @@ export const fluentTheme: ThemeDef = {
           group: "尺寸",
           constraints: { min: 12, max: 60, step: 1 },
         },
+        fontFamilyParam,
         fontSizeParam,
         borderRadiusParam(4),
         opacityParam,
       ],
       generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
+        const fontFamily = resolveFontFamily(params);
         // Always generate both unchecked and checked costumes
         return [false, true].map((checked) => {
           const svg = renderToSvg((draw) => {
@@ -222,7 +240,7 @@ export const fluentTheme: ThemeDef = {
               checkboxColor: colors.primary,
               checkColor: colors.onPrimary,
               borderColor: colors.border,
-              fontFamily: FONT_FAMILY,
+              fontFamily,
               checked,
               uncheckedFill: colors.surface,
               size: (params.size as number) ?? 20,
@@ -273,6 +291,7 @@ export const fluentTheme: ThemeDef = {
           group: "尺寸",
           constraints: { min: 14, max: 60, step: 1 },
         },
+        fontFamilyParam,
         fontSizeParam,
         opacityParam,
       ],
@@ -283,6 +302,7 @@ export const fluentTheme: ThemeDef = {
         const label = (params.label as string) ?? "";
         const labelFontSize = (params.fontSize as number) ?? 14;
         const opacity = (params.opacity as number) ?? 1;
+        const fontFamily = resolveFontFamily(params);
 
         const costumes: CostumeOutput[] = [];
 
@@ -296,7 +316,7 @@ export const fluentTheme: ThemeDef = {
               renderToggle(draw, {
                 trackColor: lerpColor(colors.border, colors.primary, eased),
                 knobColor: colors.background,
-                fontFamily: FONT_FAMILY,
+                fontFamily,
                 progress: eased,
                 trackWidth,
                 trackHeight,
@@ -315,7 +335,7 @@ export const fluentTheme: ThemeDef = {
               renderToggle(draw, {
                 trackColor: isOn ? colors.primary : colors.border,
                 knobColor: colors.background,
-                fontFamily: FONT_FAMILY,
+                fontFamily,
                 on: isOn,
                 trackWidth,
                 trackHeight,
@@ -383,6 +403,7 @@ export const fluentTheme: ThemeDef = {
           group: "尺寸",
           constraints: { min: 8, max: 60, step: 1 },
         },
+        fontFamilyParam,
         fontSizeParam,
         opacityParam,
       ],
@@ -394,11 +415,12 @@ export const fluentTheme: ThemeDef = {
         const label = (params.label as string) ?? "";
         const labelFontSize = (params.fontSize as number) ?? 14;
         const opacity = (params.opacity as number) ?? 1;
+        const fontFamily = resolveFontFamily(params);
 
         const trackCommon = {
           trackColor: colors.border,
           fillColor: colors.primary,
-          fontFamily: FONT_FAMILY,
+          fontFamily,
           trackWidth,
           trackHeight,
           label,
@@ -443,6 +465,237 @@ export const fluentTheme: ThemeDef = {
       },
       generateScripts(_spriteName, costumeNames) {
         return generateSliderScripts({ costumeNames });
+      },
+    },
+
+    // ── Radio ──────────────────────────────────────────────────────
+    radio: {
+      name: "单选框",
+      category: "基础",
+      params: [
+        { ...labelParam, defaultValue: "选项" },
+        {
+          key: "size",
+          label: "选框大小",
+          type: "number",
+          defaultValue: 20,
+          group: "尺寸",
+          constraints: { min: 12, max: 60, step: 1 },
+        },
+        fontFamilyParam,
+        fontSizeParam,
+        opacityParam,
+      ],
+      generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
+        const fontFamily = resolveFontFamily(params);
+        return [false, true].map((selected) => {
+          const svg = renderToSvg((draw) => {
+            renderRadio(draw, {
+              radioColor: colors.primary,
+              dotColor: colors.onPrimary,
+              borderColor: colors.border,
+              fontFamily,
+              selected,
+              unselectedFill: colors.surface,
+              size: (params.size as number) ?? 20,
+              label: (params.label as string) ?? "选项",
+              labelFontSize: (params.fontSize as number) ?? 14,
+              labelColor: colors.label,
+              opacity: (params.opacity as number) ?? 1,
+            });
+          });
+          const stateName = selected ? "已选中" : "未选中";
+          return { name: `单选框-${stateName}`, svg };
+        });
+      },
+      generateScripts(_spriteName, costumeNames) {
+        return generateRadioScripts({ costumeNames });
+      },
+    },
+
+    // ── ProgressBar ────────────────────────────────────────────────
+    progressBar: {
+      name: "进度条",
+      category: "基础",
+      params: [
+        { ...labelParam, defaultValue: "" },
+        {
+          key: "value",
+          label: "进度值",
+          type: "slider",
+          defaultValue: 50,
+          group: "内容",
+          common: true,
+          constraints: { min: 0, max: 100, step: 1 },
+        },
+        {
+          key: "showPercent",
+          label: "显示百分比",
+          type: "boolean",
+          defaultValue: false,
+          group: "内容",
+        },
+        {
+          key: "barWidth",
+          label: "宽度",
+          type: "number",
+          defaultValue: 200,
+          group: "尺寸",
+          constraints: { min: 40, max: 600, step: 1 },
+        },
+        {
+          key: "barHeight",
+          label: "高度",
+          type: "number",
+          defaultValue: 12,
+          group: "尺寸",
+          constraints: { min: 4, max: 40, step: 1 },
+        },
+        fontFamilyParam,
+        fontSizeParam,
+        borderRadiusParam(6),
+        opacityParam,
+      ],
+      generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
+        const fontFamily = resolveFontFamily(params);
+        const value = (params.value as number) ?? 50;
+        const svg = renderToSvg((draw) => {
+          renderProgressBar(draw, {
+            trackColor: colors.surface,
+            fillColor: colors.primary,
+            fontFamily,
+            value,
+            barWidth: (params.barWidth as number) ?? 200,
+            barHeight: (params.barHeight as number) ?? 12,
+            borderRadius: (params.borderRadius as number) ?? 6,
+            label: (params.label as string) ?? "",
+            labelFontSize: (params.fontSize as number) ?? 14,
+            labelColor: colors.label,
+            showPercent: (params.showPercent as boolean) ?? false,
+            percentColor: colors.text,
+            opacity: (params.opacity as number) ?? 1,
+          });
+        });
+        return [{ name: "进度条", svg }];
+      },
+      generateScripts(_spriteName, costumeNames) {
+        return generateProgressBarScripts({ costumeNames });
+      },
+    },
+
+    // ── TextInput ──────────────────────────────────────────────────
+    textInput: {
+      name: "文本输入框",
+      category: "基础",
+      params: [
+        {
+          key: "placeholder",
+          label: "占位文字",
+          type: "string",
+          defaultValue: "请输入…",
+          group: "内容",
+          common: true,
+        },
+        {
+          key: "value",
+          label: "文本内容",
+          type: "string",
+          defaultValue: "",
+          group: "内容",
+          common: true,
+        },
+        {
+          key: "width",
+          label: "宽度",
+          type: "number",
+          defaultValue: 200,
+          group: "尺寸",
+          constraints: { min: 60, max: 600, step: 1 },
+        },
+        {
+          key: "height",
+          label: "高度",
+          type: "number",
+          defaultValue: 36,
+          group: "尺寸",
+          constraints: { min: 24, max: 80, step: 1 },
+        },
+        fontFamilyParam,
+        fontSizeParam,
+        borderRadiusParam(4),
+        borderWidthParam(1.5),
+        opacityParam,
+      ],
+      generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
+        const fontFamily = resolveFontFamily(params);
+        const common = {
+          fill: colors.background,
+          borderColor: colors.border,
+          textColor: colors.text,
+          placeholderColor: colors.textSecondary,
+          fontFamily,
+          placeholder: (params.placeholder as string) ?? "请输入…",
+          value: (params.value as string) ?? "",
+          width: (params.width as number) ?? 200,
+          height: (params.height as number) ?? 36,
+          fontSize: (params.fontSize as number) ?? 14,
+          borderWidth: (params.borderWidth as number) ?? 1.5,
+          borderRadius: (params.borderRadius as number) ?? 4,
+          opacity: (params.opacity as number) ?? 1,
+        };
+
+        return [
+          {
+            name: "输入框-默认",
+            svg: renderToSvg((draw) => renderTextInput(draw, { ...common, focused: false })),
+          },
+          {
+            name: "输入框-聚焦",
+            svg: renderToSvg((draw) =>
+              renderTextInput(draw, { ...common, focused: true, focusBorderColor: colors.primary }),
+            ),
+          },
+        ];
+      },
+      generateScripts(_spriteName, costumeNames) {
+        return generateTextInputScripts({ costumeNames });
+      },
+    },
+
+    // ── TextLabel ──────────────────────────────────────────────────
+    textLabel: {
+      name: "文本标签",
+      category: "基础",
+      params: [
+        {
+          key: "text",
+          label: "文本",
+          type: "string",
+          defaultValue: "文本",
+          group: "内容",
+          common: true,
+        },
+        fontFamilyParam,
+        fontSizeParam,
+        fontWeightParam,
+        opacityParam,
+      ],
+      generateCostumes(colors: ThemeColors, params: Record<string, unknown>): CostumeOutput[] {
+        const fontFamily = resolveFontFamily(params);
+        const svg = renderToSvg((draw) => {
+          renderTextLabel(draw, {
+            textColor: colors.text,
+            fontFamily,
+            text: (params.text as string) ?? "文本",
+            fontSize: (params.fontSize as number) ?? 14,
+            fontWeight: (params.fontWeight as string) ?? "normal",
+            opacity: (params.opacity as number) ?? 1,
+          });
+        });
+        return [{ name: "文本标签", svg }];
+      },
+      generateScripts(_spriteName, costumeNames) {
+        return generateTextLabelScripts({ costumeNames });
       },
     },
   },

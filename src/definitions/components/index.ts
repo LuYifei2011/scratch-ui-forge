@@ -16,3 +16,27 @@ export type {
   SliderKnobBaseOptions,
   SliderKnobStyleOptions,
 } from "./SliderComponent";
+
+export { renderRadio } from "./RadioComponent";
+export type { RadioOptions, RadioBaseOptions, RadioStyleOptions } from "./RadioComponent";
+
+export { renderProgressBar } from "./ProgressBarComponent";
+export type {
+  ProgressBarOptions,
+  ProgressBarBaseOptions,
+  ProgressBarStyleOptions,
+} from "./ProgressBarComponent";
+
+export { renderTextInput } from "./TextInputComponent";
+export type {
+  TextInputOptions,
+  TextInputBaseOptions,
+  TextInputStyleOptions,
+} from "./TextInputComponent";
+
+export { renderTextLabel } from "./TextLabelComponent";
+export type {
+  TextLabelOptions,
+  TextLabelBaseOptions,
+  TextLabelStyleOptions,
+} from "./TextLabelComponent";

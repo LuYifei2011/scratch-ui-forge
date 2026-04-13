@@ -22,3 +22,7 @@ export { generateButtonScripts } from "./templates/buttonScripts";
 export { generateCheckboxScripts } from "./templates/checkboxScripts";
 export { generateToggleScripts } from "./templates/toggleScripts";
 export { generateSliderScripts } from "./templates/sliderScripts";
+export { generateRadioScripts } from "./templates/radioScripts";
+export { generateProgressBarScripts } from "./templates/progressBarScripts";
+export { generateTextInputScripts } from "./templates/textInputScripts";
+export { generateTextLabelScripts } from "./templates/textLabelScripts";
